@@ -1,0 +1,56 @@
+# version: '3.9'
+
+# services:
+#   # Mongodb services
+#   mongo_db: 
+#     container_name: skcdb_container
+#     image: mongo:latest
+#     restart: always
+#     volumes:
+#       - mongo_db:/data/db
+
+#   #Node API services
+#   api: 
+#     build: .
+#     ports: 
+#       - 3000
+#     environment:
+#       PORT: 3000
+#       MONGODB_URL: mongodb://mongo_db:27017/
+#       DB_NAME: SKC_DB
+#       NAME: SKY CLINIC 
+#     depends_on:
+#       - mongo_db
+
+# volumes: 
+#   mongo_db: {}
+
+version: '3.9'
+
+services:
+  #Node API services
+  node_mongo_docker: 
+    image: node_mongo_docker
+    build: .
+    ports: 
+      - 3000:3000
+    environment:
+      MONGODB_URL: mongodb://skcprocd:sdTGeX008io0OBWjXbSQpNImVAtmOCxNwPIt1CGSvPdtH4RB1wPHW2z9EnyxnajYpkwDC3gcUp3PdSOHQrvGpQ==@skcprocd.mongo.cosmos.azure.com:10255/?ssl=true&retrywrites=false&maxIdleTimeMS=120000&appName=@skcprocd@
+      DB_NAME: SKC_DB
+      NAME: SKY CLINIC 
+    volumes:
+      - .:/urs/src/app
+    depends_on:
+      - mongo_db
+
+  # Mongodb services
+  mongo_db: 
+    image: mongo:latest
+    container_name: skcdb_container
+    ports:
+      - 27017:27017
+    volumes:
+      - data:/data/db
+volumes: 
+  data:
+

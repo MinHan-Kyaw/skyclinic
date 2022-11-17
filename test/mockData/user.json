@@ -1,0 +1,29 @@
+{
+    "userid": "testskc@gmail.com",
+    "wronguserid": "wrongtestskc@gmail.com",
+    "wrongmail": "wrongmail.com",
+    "correctdata": {
+        "username": "john",
+        "fullname": "John Mayer",
+        "phone": "testskc@gmail.com",
+        "password": "skc123",
+        "email": "john@gmail.com"
+    },
+    "insufficientdata": {
+        "username": "john",
+        "fullname": "John Mayer",
+        "phone": "testskc@gmail.com",
+        "password": "skc123"
+    },
+    "signindata":{
+        "userid": "testskc@gmail.com",
+        "password": "skc123"
+    },
+    "wrongsignindata":{
+        "userid": "testskc@gmail.com",
+        "password": "skc111"
+    },
+    "insufficientsignindata":{
+        "userid": "testskc@gmail.com"
+    }
+}
