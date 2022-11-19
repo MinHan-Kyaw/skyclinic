@@ -62,10 +62,12 @@ export class DoctorServices {
         }
 
         var files: any = req.files;
+        console.log(req);
         const smphoto = files?.find((x: any) => x.fieldname == "smphoto");
         const grecord = files?.find((x: any) => x.fieldname == "grecord");
 
         if (smphoto == undefined) {
+          console.log('here')
           data = {};
           status = "insufficient";
           return { status, data };
@@ -85,19 +87,34 @@ export class DoctorServices {
           "skcbucket",
           "smphoto/" + smphotoname,
           smphoto["path"],
-          { "Content-Type": "application/octet-stream" },
+          { "Content-Type": "application/octet-stream" }
         );
-        
-        const grecordname = grecord ? generateFilename(grecord.originalname) : '';
-        if(grecord != undefined){
+
+      
+        /* Deleting the file from the uploads folder. */
+        fs.unlink(smphoto["path"], (err) => {
+          if (err) {
+            throw err;
+          }
+        })
+
+        const grecordname = grecord
+          ? generateFilename(grecord.originalname)
+          : "";
+        if (grecord != undefined) {
           const await_grecord = await minioClient.fPutObject(
             "skcbucket",
             "grecord/" + grecordname,
             grecord["path"],
             { "Content-Type": "application/octet-stream" }
           );
+          /* Deleting the file from the uploads folder. */
+          fs.unlink(grecord["path"], (err) => {
+            if (err) {
+              throw err;
+            }
+          })
         }
-
 
         const doctorid = uuidv4();
         // collect request parameter for appuser
@@ -111,7 +128,7 @@ export class DoctorServices {
           degreename: AesEncryption.encrypt(req.body.degreename),
           guni: AesEncryption.encrypt(req.body.guni),
           gyear: AesEncryption.encrypt(req.body.gyear),
-          grecord: AesEncryption.encrypt(grecordname), 
+          grecord: AesEncryption.encrypt(grecordname),
           degrees: [],
           phone: AesEncryption.encrypt(req.body.phone),
           specializedarea: [],

@@ -30,22 +30,6 @@ export default class Routes {
     app.post(
       "/doctor/setup",
       multer({ dest: "./uploads/" }).any(),
-      // multer({ dest: "./uploads/" }).fields([
-      //   { name: "profileimage", maxCount: 1 },
-      //   { name: "identifiedphoto_front", maxCount: 1 },
-      //   { name: "identifiedphoto_back", maxCount: 1 },
-      //   { name: "userid" },
-      //   { name: "fullname" },
-      //   { name: "othername" },
-      //   { name: "email" },
-      //   { name: "address" },
-      //   { name: "dob" },
-      //   { name: "gender" },
-      //   { name: "bloodtype" },
-      //   { name: "allergicdrug" },
-      //   { name: "cmt" },
-      //   { name: "identifiednumber" },
-      // ]),
       async (req: Request, res: Response) => {
         passport.authenticate(
           "jwt",

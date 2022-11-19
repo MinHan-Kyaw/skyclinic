@@ -16,6 +16,10 @@ const jwt = require("jsonwebtoken");
 
 const { secretKey, algorithms } = environment.getJWTConfig();
 
+const bucket_url = "http://192.168.1.20:9000/skcbucket/";
+const identifiedphoto_url = bucket_url + "identifiedphotos/";
+const profile_url = bucket_url + "profiles/";
+
 @injectable()
 export class UserServices {
   skcuser: mongoose.Model<any>;
@@ -42,7 +46,7 @@ export class UserServices {
       }
       const { userid } = req.body;
       const token = getTokenFromHeader(req);
-      console.log('here')
+      console.log("here");
 
       // check request token exist or not
       if (token) {
@@ -52,10 +56,20 @@ export class UserServices {
         // check request token valid or not
         if (doc["_userid"] == _userid) {
           var files: any = req.files;
-          const profileimage = files?.find((x: any) => x.fieldname == 'profileimage');
-          const identifiedphoto_front = files?.find((x: any) => x.fieldname == 'identifiedphoto_front');
-          const identifiedphoto_back = files?.find((x: any) => x.fieldname == 'identifiedphoto_back');
-          if(profileimage == undefined || identifiedphoto_front == undefined || identifiedphoto_back == undefined){
+          const profileimage = files?.find(
+            (x: any) => x.fieldname == "profileimage"
+          );
+          const identifiedphoto_front = files?.find(
+            (x: any) => x.fieldname == "identifiedphoto_front"
+          );
+          const identifiedphoto_back = files?.find(
+            (x: any) => x.fieldname == "identifiedphoto_back"
+          );
+          if (
+            profileimage == undefined ||
+            identifiedphoto_front == undefined ||
+            identifiedphoto_back == undefined
+          ) {
             data = {};
             status = "insufficient";
             return { status, data };
@@ -80,7 +94,7 @@ export class UserServices {
             const skcuser_filter = { appuserid: app_user.appuserid };
             // check user exist or not
             const checkexist = await this.skcuser.findOne(skcuser_filter);
-            console.log('here 2')
+            console.log("here 2");
             if (checkexist) {
               //profile image upload
               const profileimagename = generateFilename(
@@ -89,11 +103,16 @@ export class UserServices {
               const await_profile = await minioClient.fPutObject(
                 "skcbucket",
                 "profiles/" + profileimagename,
-                /*  */
-                /* *|MARKER_CURSOR|* */
+
                 profileimage["path"],
-                { "Content-Type": "application/octet-stream" },
+                { "Content-Type": "application/octet-stream" }
               );
+              fs.unlink(profileimage["path"], (err) => {
+                if (err) {
+                  throw err;
+                }
+              });
+
 
               //Identified front image upload
 
@@ -104,8 +123,15 @@ export class UserServices {
                 "skcbucket",
                 "identifiedphotos/" + identifiedphotofrontname,
                 identifiedphoto_front["path"],
-                { "Content-Type": "application/octet-stream" },
+                { "Content-Type": "application/octet-stream" }
               );
+
+              // remove temporary folder for images
+              fs.unlink(identifiedphoto_front["path"], (err) => {
+                if (err) {
+                  throw err;
+                }
+              });
 
               //Identified back image upload
               const identifiedphotobackname = generateFilename(
@@ -115,8 +141,14 @@ export class UserServices {
                 "skcbucket",
                 "identifiedphotos/" + identifiedphotobackname,
                 identifiedphoto_back["path"],
-                { "Content-Type": "application/octet-stream" },
+                { "Content-Type": "application/octet-stream" }
               );
+
+              fs.unlink(identifiedphoto_back["path"], (err) => {
+                if (err) {
+                  throw err;
+                }
+              });
 
               const skcuser_params: ISKCUser = {
                 skcuserid: checkexist.skcuserid,
@@ -166,13 +198,6 @@ export class UserServices {
                 modification_notes: result.modification_notes,
                 __v: result.__v,
               });
-
-              // // remove temporary folder for images
-              // fs.rm("uploads/", { recursive: true }, (err) => {
-              //   if (err) {
-              //     throw err;
-              //   }
-              // });
 
               data = {};
               status = "success";
@@ -319,13 +344,14 @@ export class UserServices {
                 identifiednumber: AesEncryption.decrypt(
                   skcuser.identifiednumber
                 ),
-                identifiedphoto_front: AesEncryption.decrypt(
-                  skcuser.identifiedphoto_front
-                ),
-                identifiedphoto_back: AesEncryption.decrypt(
-                  skcuser.identifiedphoto_back
-                ),
-                profileimage: AesEncryption.decrypt(skcuser.profileimage),
+                identifiedphoto_front:
+                  identifiedphoto_url +
+                  AesEncryption.decrypt(skcuser.identifiedphoto_front),
+                identifiedphoto_back:
+                  identifiedphoto_url +
+                  AesEncryption.decrypt(skcuser.identifiedphoto_back),
+                profileimage:
+                  profile_url + AesEncryption.decrypt(skcuser.profileimage),
               };
               data = result;
               status = "success";
