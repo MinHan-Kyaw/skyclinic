@@ -51,42 +51,54 @@ export class DoctorServices {
       };
       var filter = await this.appusers.findOne(filter_userid);
       if (filter != null && filter.appuserid) {
+        const appuserid = filter.appuserid;
+
+        const filter_appuserid = { appuserid: appuserid };
+        const check_exist = await this.doctor.findOne(filter_appuserid);
+        if (check_exist != null) {
+          data = {};
+          const status = "unauthorized";
+          return { data, status };
+        }
+
         var files: any = req.files;
-        const grecord = files?.find(
-          (x: any) => x.grecord == "grecord"
-        );
-        if (
-          grecord == undefined
-        ) {
+        const smphoto = files?.find((x: any) => x.fieldname == "smphoto");
+        const grecord = files?.find((x: any) => x.fieldname == "grecord");
+
+        if (smphoto == undefined) {
           data = {};
           status = "insufficient";
           return { status, data };
         }
         // Check Image Type
         if (
-          !checkFileType(grecord.mimetype)
+          !checkFileType(smphoto.mimetype) ||
+          (grecord != undefined && !checkFileType(grecord.mimetype))
         ) {
           data = {};
           status = "invalidimg";
           return { status, data };
         }
 
-        const grecordname = generateFilename(grecord.originalname);
-        minioClient.fPutObject(
+        const smphotoname = generateFilename(smphoto.originalname);
+        const await_smphoto = await minioClient.fPutObject(
           "skcbucket",
-          "grecord/" + grecordname,
-          grecord["path"],
+          "smphoto/" + smphotoname,
+          smphoto["path"],
           { "Content-Type": "application/octet-stream" },
-          function (error, etag) {
-            if (error) {
-              data = error;
-              status = "fail";
-              return { status, data };
-            }
-          }
         );
+        
+        const grecordname = grecord ? generateFilename(grecord.originalname) : '';
+        if(grecord != undefined){
+          const await_grecord = await minioClient.fPutObject(
+            "skcbucket",
+            "grecord/" + grecordname,
+            grecord["path"],
+            { "Content-Type": "application/octet-stream" }
+          );
+        }
 
-        const appuserid = filter.appuserid;
+
         const doctorid = uuidv4();
         // collect request parameter for appuser
         const doctor_data: Idoctor = {
@@ -95,11 +107,11 @@ export class DoctorServices {
           doctorname: AesEncryption.encrypt(req.body.doctorname),
           smno: AesEncryption.encrypt(req.body.smno),
           expdate: req.body.expdate,
-          smphoto: AesEncryption.encrypt(req.body.smphoto),
+          smphoto: AesEncryption.encrypt(smphotoname),
           degreename: AesEncryption.encrypt(req.body.degreename),
           guni: AesEncryption.encrypt(req.body.guni),
           gyear: AesEncryption.encrypt(req.body.gyear),
-          grecord: AesEncryption.encrypt(grecordname),
+          grecord: AesEncryption.encrypt(grecordname), 
           degrees: [],
           phone: AesEncryption.encrypt(req.body.phone),
           specializedarea: [],
@@ -113,7 +125,7 @@ export class DoctorServices {
         const doctor_value = new this.doctor(doctor_data);
         const doctor_result = await doctor_value.save();
 
-        data = {};
+        data = doctor_result;
         status = "success";
         return { status, data };
       } else {
@@ -130,7 +142,17 @@ export class DoctorServices {
 
   public checksetupdoctorrequest(req: Request) {
     // check request parameter contain or not
-    if (req.body.userid == undefined || req.body.userid == "") {
+    if (
+      (req.body.userid &&
+        req.body.doctorname &&
+        req.body.smno &&
+        req.body.expdate &&
+        req.body.degreename &&
+        req.body.guni &&
+        req.body.gyear &&
+        req.body.phone &&
+        req.body.specializedarea) == undefined
+    ) {
       return "fail";
     }
   }

@@ -86,20 +86,13 @@ export class UserServices {
               const profileimagename = generateFilename(
                 profileimage.originalname
               );
-              minioClient.fPutObject(
+              const await_profile = await minioClient.fPutObject(
                 "skcbucket",
                 "profiles/" + profileimagename,
                 /*  */
                 /* *|MARKER_CURSOR|* */
                 profileimage["path"],
                 { "Content-Type": "application/octet-stream" },
-                function (error, etag) {
-                  if (error) {
-                    data = error;
-                    status = "fail";
-                    return { status, data };
-                  }
-                }
               );
 
               //Identified front image upload
@@ -107,36 +100,22 @@ export class UserServices {
               const identifiedphotofrontname = generateFilename(
                 identifiedphoto_front.originalname
               );
-              minioClient.fPutObject(
+              const await_identifiedphoto_front = await minioClient.fPutObject(
                 "skcbucket",
                 "identifiedphotos/" + identifiedphotofrontname,
                 identifiedphoto_front["path"],
                 { "Content-Type": "application/octet-stream" },
-                function (error, etag) {
-                  if (error) {
-                    data = error;
-                    status = "fail";
-                    return { status, data };
-                  }
-                }
               );
 
               //Identified back image upload
               const identifiedphotobackname = generateFilename(
                 identifiedphoto_back.originalname
               );
-              minioClient.fPutObject(
+              const await_identifiedphoto_back = await minioClient.fPutObject(
                 "skcbucket",
                 "identifiedphotos/" + identifiedphotobackname,
                 identifiedphoto_back["path"],
                 { "Content-Type": "application/octet-stream" },
-                function (error, etag) {
-                  if (error) {
-                    data = error;
-                    status = "fail";
-                    return { status, data };
-                  }
-                }
               );
 
               const skcuser_params: ISKCUser = {
