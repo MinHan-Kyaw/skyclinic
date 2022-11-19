@@ -178,7 +178,7 @@ export class UserServices {
                 created_user: checkexist.created_user,
                 modified_user: checkexist.modified_user,
                 is_delete: checkexist.is_delete,
-                is_acitve: checkexist.is_acitve,
+                is_active: checkexist.is_active,
               };
               const result = await this.skcuser.findOneAndUpdate(
                 { appuserid: app_user.appuserid },

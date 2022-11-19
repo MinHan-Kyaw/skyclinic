@@ -4,7 +4,7 @@ export interface BaseModel {
     created_user: String;
     modified_user: String;
     is_delete: Boolean;
-    is_acitve: Boolean;
+    is_active: Boolean;
 }
 
 export const BaseModel = {
@@ -13,6 +13,6 @@ export const BaseModel = {
     created_user: String,
     modified_user: String,
     is_delete: Boolean,
-    is_acitve: Boolean
+    is_active: Boolean
 }
 

@@ -896,7 +896,7 @@
                                                         "is_delete": {
                                                             "type": "boolean"
                                                         },
-                                                        "is_acitve": {
+                                                        "is_active": {
                                                             "type": "boolean"
                                                         },
                                                         "_id": {
@@ -1175,7 +1175,7 @@
                                                         "is_delete": {
                                                             "type": "boolean"
                                                         },
-                                                        "is_acitve": {
+                                                        "is_active": {
                                                             "type": "boolean"
                                                         },
                                                         "_id": {
@@ -1348,7 +1348,7 @@
                                                         "is_delete": {
                                                             "type": "boolean"
                                                         },
-                                                        "is_acitve": {
+                                                        "is_active": {
                                                             "type": "boolean"
                                                         },
                                                         "_id": {
@@ -1815,7 +1815,7 @@
                             "is_delete": {
                                 "type": "boolean"
                             },
-                            "is_acitve": {
+                            "is_active": {
                                 "type": "boolean"
                             },
                             "_id": {
@@ -1873,7 +1873,7 @@
                             "is_delete": {
                                 "type": "boolean"
                             },
-                            "is_acitve": {
+                            "is_active": {
                                 "type": "boolean"
                             },
                             "_id": {
@@ -1922,7 +1922,7 @@
                             "is_delete": {
                                 "type": "boolean"
                             },
-                            "is_acitve": {
+                            "is_active": {
                                 "type": "boolean"
                             },
                             "_id": {

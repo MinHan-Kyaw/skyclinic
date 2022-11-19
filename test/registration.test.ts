@@ -54,7 +54,7 @@ describe("User Registration", () => {
       created_user: "null",
       modified_user: "null",
       is_delete: false,
-      is_acitve: false,
+      is_active: false,
     };
     const appuser_value = new appuserclass.model(app_user);
     const appuser_result = await appuser_value.save();
