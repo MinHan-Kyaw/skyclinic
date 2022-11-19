@@ -81,12 +81,13 @@ export class RegistrationServices {
           created_user: "null",
           modified_user: "null",
           is_delete: false,
-          is_active: false,
+          is_active: true,
         };
         const appuser_value = new this.appusers(app_user);
         const appuser_result = await appuser_value.save();
 
         const skcuserId = uuidv4();
+
         // collect request parameter for skcuser
         const skc_param: ISKCUser = {
           skcuserid: skcuserId,
@@ -110,7 +111,8 @@ export class RegistrationServices {
           created_user: "null",
           modified_user: "null",
           is_delete: false,
-          is_active: false,
+          is_active: true,
+          age: 0
         };
         const skc_value = new this.skcuser(skc_param);
         await skc_value.save();
@@ -222,13 +224,13 @@ export class RegistrationServices {
         status = "insufficient";
         return { status, data };
       }
-      const { userid,token } = req;
-      // const token = getTokenFromHeader(req);
-      // check request token exist or not
-      if (token) {
-        // check request token true or false
-        const doc = jwt.decode(token, secretKey, algorithms);
-        if (doc["_userid"] == AesEncryption.encrypt(userid)) {
+      const { userid } = req;
+      // // const token = getTokenFromHeader(req);
+      // // check request token exist or not
+      // if (token) {
+      //   // check request token true or false
+      //   const doc = jwt.decode(token, secretKey, algorithms);
+      //   if (doc["_userid"] == AesEncryption.encrypt(userid)) {
           var OTP = this.random(1, 900000);
           const JWT = jwt.sign({ code: OTP }, secretKey, {
             expiresIn: "2m",
@@ -253,16 +255,16 @@ export class RegistrationServices {
           data = JWT;
           status = "success";
           return { status, data };
-        } else {
-          data = {};
-          status = "unauthorized";
-          return { status, data };
-        }
-      } else {
-        data = {};
-        status = "unauthorized";
-        return { status, data };
-      }
+      //   } else {
+      //     data = {};
+      //     status = "unauthorized";
+      //     return { status, data };
+      //   }
+      // } else {
+      //   data = {};
+      //   status = "unauthorized";
+      //   return { status, data };
+      // }
     } catch (e) {
       data = e;
       status = "fail";
@@ -283,12 +285,12 @@ export class RegistrationServices {
         return { status, data };
       }
       const { userid, session, otp } = req.body;
-      const token = getTokenFromHeader(req);
+      // const token = getTokenFromHeader(req);
       // check request token exist or not
-      if (token) {
-        // check request token true or false
-        const doc_token = jwt.decode(token, secretKey, algorithms);
-        if (doc_token["_userid"] == AesEncryption.encrypt(userid)) {
+      // if (token) {
+      //   // check request token true or false
+      //   const doc_token = jwt.decode(token, secretKey, algorithms);
+      //   if (doc_token["_userid"] == AesEncryption.encrypt(userid)) {
           // check request session true or false
           const doc_session = jwt.decode(session, secretKey, algorithms);
           if (
@@ -341,16 +343,16 @@ export class RegistrationServices {
             status = "invalidotp";
             return { status, data };
           }
-        } else {
-          data = {};
-          status = "unauthorized";
-          return { status, data };
-        }
-      } else {
-        data = {};
-        status = "unauthorized";
-        return { status, data };
-      }
+      //   } else {
+      //     data = {};
+      //     status = "unauthorized";
+      //     return { status, data };
+      //   }
+      // } else {
+      //   data = {};
+      //   status = "unauthorized";
+      //   return { status, data };
+      // }
     } catch (e) {
       data = e;
       status = "fail";

@@ -19,6 +19,7 @@ export interface ISKCUser extends BaseModel {
   identifiedphoto_front: String,
   identifiedphoto_back: String,
   profileimage: String,
+  age: Number
 }
 
 // Response Format
@@ -39,6 +40,7 @@ export interface RSKCUser {
   identifiedphoto_front: String,
   identifiedphoto_back: String,
   profileimage: String,
+  age: Number
 }
 
 @singleton()
@@ -62,6 +64,7 @@ export default class ISKCUserClass {
     identifiedphoto_front: String,
     identifiedphoto_back: String,
     profileimage: String,
+    age: Number,
     ...BaseModel
   });
   model = mongoose.models.skcusers || mongoose.model("skcusers", this.skcschema);

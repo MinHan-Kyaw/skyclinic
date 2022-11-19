@@ -155,13 +155,34 @@ export default class Routes {
         })(req,res);
       }
     );
-    //create get all users route
+    //create get all users type route
     app.post(
-      "/user/getall",
+      "/user/getbytype",
       passport.authenticate("jwt", { session: false }),
       authorize(Roles.ADMIN),
       async (req: Request, res: Response) => {
-        const data = await this.user_service.getall(req);
+        const data = await this.user_service.getbytype(req);
+        if (data.status == "success") {
+          successresponse("Get User successfully", data.data, res);
+        } else if (data.status == "insufficient") {
+          insufficientparameters(res);
+        } else if (data.status == "unauthorized") {
+          failureresponse("Unauthorized.", data.data, res);
+        } else if (data.status == "invalid") {
+          failureresponse("User not found.", data.data, res);
+        } else {
+          failureresponse("Error.", data.data, res);
+        }
+      }
+    );
+
+    //create get all users route
+    app.get(
+      "/user/getall",
+      passport.authenticate("jwt", { session: false }),
+      authorize(Roles.ADMIN),
+      async ( res: Response) => {
+        const data = await this.user_service.getall();
         if (data.status == "success") {
           successresponse("Get User successfully", data.data, res);
         } else if (data.status == "insufficient") {

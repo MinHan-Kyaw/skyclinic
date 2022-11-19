@@ -45,16 +45,16 @@ export class UserServices {
         return { status, data };
       }
       const { userid } = req.body;
-      const token = getTokenFromHeader(req);
+      // const token = getTokenFromHeader(req);
       console.log("here");
 
       // check request token exist or not
-      if (token) {
-        const doc = jwt.decode(token, secretKey, algorithms);
+      // if (token) {
+      //   const doc = jwt.decode(token, secretKey, algorithms);
 
         const _userid = AesEncryption.encrypt(userid);
-        // check request token valid or not
-        if (doc["_userid"] == _userid) {
+      //   // check request token valid or not
+      //   if (doc["_userid"] == _userid) {
           var files: any = req.files;
           const profileimage = files?.find(
             (x: any) => x.fieldname == "profileimage"
@@ -149,7 +149,11 @@ export class UserServices {
                   throw err;
                 }
               });
-
+              
+              const today = new Date();
+              var year = req.body.dob[0];
+          // let year = d.getFullYear();
+              var age = today.getFullYear() - year;
               const skcuser_params: ISKCUser = {
                 skcuserid: checkexist.skcuserid,
                 appuserid: checkexist.appuserid,
@@ -179,6 +183,7 @@ export class UserServices {
                 modified_user: checkexist.modified_user,
                 is_delete: checkexist.is_delete,
                 is_active: checkexist.is_active,
+                age: age
               };
               const result = await this.skcuser.findOneAndUpdate(
                 { appuserid: app_user.appuserid },
@@ -212,37 +217,128 @@ export class UserServices {
             status = "invalid";
             return { status, data };
           }
-        } else {
-          data = {};
-          status = "unauthorized";
-          return { status, data };
-        }
-      } else {
-        data = {};
-        status = "unauthorized";
-        return { status, data };
-      }
+      //   } else {
+      //     data = {};
+      //     status = "unauthorized";
+      //     return { status, data };
+      //   }
+      // } else {
+      //   data = {};
+      //   status = "unauthorized";
+      //   return { status, data };
+      // }
     } catch (e) {
       data = e;
       status = "fail";
       return { status, data };
     }
   }
+   //get all user by type (age, active/inactive)
+   public async getbytype(req: Request): Promise<{ status: string; data: any }> {
+    var data: any;
+    var status: any;
+    var list: any = [];
+    // console.log("herere");
+    try {
+      
+      // check request parameter contain or not
+      const check = this.checkgettypeuserrequest(req);
+      // console.log("herer");
+      if (check == "fail") {
+        data = {};
+        status = "insufficient"; 
+        return { status, data };
+      }
+      // const { userid } = req.body;
+      // const token = getTokenFromHeader(req);
+      // check request token exist or not
+      // if (token) {
+      // const doc = jwt.decode(token, secretKey, algorithms);
+      // check request token true or false
+      // if (doc["_userid"] == AesEncryption.encrypt(userid)) {
+      var skcuserlist:any;
+      if(req.body.age == 0){
+        if (req.body.gender == ""){
+          skcuserlist = await this.skcuser.find({ is_active: req.body.active });  
+        }
+        else{
+          skcuserlist = await this.skcuser.find({ is_active: req.body.active, gender: req.body.gender });
+        }
+      }
+      else if(req.body.gender == ""){
+        if (req.body.age == 0){
+          skcuserlist = await this.skcuser.find({ is_active: req.body.active });  
+        }
+        else{
+          skcuserlist = await this.skcuser.find({ is_active: req.body.active, age: req.body.age });
+        }
+      }
+      else{
+        skcuserlist = await this.skcuser.find({ age: req.body.age, is_active: req.body.active });
+      }
+      console.log(skcuserlist);
+      const appuserlist = await this.appusers.find({});
+      status = "success";
+      // check data empty
+      if (!skcuserlist) {
+        data = {};
+        return { status, data };
+      }
+      for (var i = 0, len = skcuserlist.length; i < len; i++) {
+        let useridobj: any;
+        useridobj = appuserlist.filter(
+          (appuser) => appuser.appuserid === skcuserlist[i]["appuserid"]
+        );
+        //check user is deleted or not
+        if (useridobj[0]["is_delete"] == false) {
+          list.push({
+            skcuserid: skcuserlist[i]["skcuserid"],
+            // userid: AesEncryption.decrypt(useridobj[0]["userid"]),
+            name: AesEncryption.decrypt(useridobj[0]["username"]),
+            phone: AesEncryption.decrypt(useridobj[0]["phone"]),
+            address: AesEncryption.decrypt(skcuserlist[i]["address"]),
+            gender: skcuserlist[i]["gender"],
+            usertype: AesEncryption.decrypt(skcuserlist[i]["usertype"]),
+            identifiedPhoto: skcuserlist[i]["identifiedPhoto"],
+            profileImage: skcuserlist[i]["profileImage"],
+          });
+        }
+      }
+      data = list;
+      status = "success";
+      return { status, data };
+      // } else {
+      //   data = {};
+      //   status = "unauthorized";
+      //   return { status, data };
+      // }
+      // } else {
+      //   data = {};
+      //   status = "unauthorized";
+      //   return { status, data };
+      // }
+    } catch (e) {
+      data = e;
+      status = "fail";
+      return { status, data };
+    }
+  }
+
   // get all user
-  public async getall(req: Request): Promise<{ status: string; data: any }> {
+  public async getall(): Promise<{ status: string; data: any }> {
     var data: any;
     var status: any;
     var list: any = [];
     try {
       // check request parameter contain or not
-      const check = this.checkgetalluserrequest(req);
-      if (check == "fail") {
-        data = {};
-        status = "insufficient";
-        return { status, data };
-      }
-      const { userid } = req.body;
-      const token = getTokenFromHeader(req);
+      // const check = this.checkgetalluserrequest(req);
+      // if (check == "fail") {
+      //   data = {};
+      //   status = "insufficient";
+      //   return { status, data };
+      // }
+      // const { userid } = req.body;
+      // const token = getTokenFromHeader(req);
       // check request token exist or not
       // if (token) {
       // const doc = jwt.decode(token, secretKey, algorithms);
@@ -303,19 +399,19 @@ export class UserServices {
     try {
       const { userid } = req.body;
       const _userid = AesEncryption.encrypt(userid);
-      const token = getTokenFromHeader(req);
-      // check request parameter contain or not
-      const check = this.checkuserid(req);
-      if (check == "fail") {
-        data = {};
-        status = "insufficient";
-        return { status, data };
-      }
+      // const token = getTokenFromHeader(req);
+      // // check request parameter contain or not
+      // const check = this.checkuserid(req);
+      // if (check == "fail") {
+      //   data = {};
+      //   status = "insufficient";
+      //   return { status, data };
+      // }
       // check request token exist or not
-      if (token) {
-        const doc = jwt.decode(token, secretKey, algorithms);
-        // check request token valid or not
-        if (doc["_userid"] == _userid) {
+      // if (token) {
+      //   const doc = jwt.decode(token, secretKey, algorithms);
+      //   // check request token valid or not
+      //   if (doc["_userid"] == _userid) {
           const appuser_filter = {
             $or: [{ username: _userid }, { phone: _userid }],
           };
@@ -352,6 +448,7 @@ export class UserServices {
                   AesEncryption.decrypt(skcuser.identifiedphoto_back),
                 profileimage:
                   profile_url + AesEncryption.decrypt(skcuser.profileimage),
+                age: skcuser.age
               };
               data = result;
               status = "success";
@@ -366,16 +463,16 @@ export class UserServices {
             status = "invalid";
             return { status, data };
           }
-        } else {
-          data = {};
-          status = "unauthorized";
-          return { status, data };
-        }
-      } else {
-        data = {};
-        status = "unauthorized";
-        return { status, data };
-      }
+        // } else {
+        //   data = {};
+        //   status = "unauthorized";
+        //   return { status, data };
+        // }
+      // } else {
+      //   data = {};
+      //   status = "unauthorized";
+      //   return { status, data };
+      // }
     } catch (e: any) {
       data = e;
       status = "fail";
@@ -390,7 +487,7 @@ export class UserServices {
     var status: any;
     try {
       const { userid } = req.body;
-      const token = getTokenFromHeader(req);
+      // const token = getTokenFromHeader(req);
       // check request parameter contain or not
       const check = this.checkuserdeleterequest(req);
       if (check == "fail") {
@@ -399,10 +496,10 @@ export class UserServices {
         return { status, data };
       }
       // check request token exist or not
-      if (token) {
-        const doc = jwt.decode(token, secretKey, algorithms);
+      // if (token) {
+        // const doc = jwt.decode(token, secretKey, algorithms);
         // check request token valid or not
-        if (doc["_userid"] == AesEncryption.encrypt(userid)) {
+        // if (doc["_userid"] == AesEncryption.encrypt(userid)) {
           const skcuser_filter = { skcuserid: req.body.skcuserid };
           if (req.body.skcuserid) {
             const skcuser_value = await this.skcuser.findOne(skcuser_filter);
@@ -437,16 +534,16 @@ export class UserServices {
             status = "fail";
             return { status, data };
           }
-        } else {
-          data = {};
-          status = "invalid";
-          return { status, data };
-        }
-      } else {
-        data = {};
-        status = "unauthorized";
-        return { status, data };
-      }
+        // } else {
+        //   data = {};
+        //   status = "invalid";
+        //   return { status, data };
+        // }
+      // } else {
+      //   data = {};
+      //   status = "unauthorized";
+      //   return { status, data };
+      // }
     } catch (e) {
       data = e;
       status = "fail";
@@ -491,9 +588,9 @@ export class UserServices {
       return "fail";
     }
   }
-  public checkgetalluserrequest(req: Request) {
+  public checkgettypeuserrequest(req: Request) {
     // check request parameter contain or not
-    if (req.body.userid == undefined) {
+    if (req.body.age && req.body.active && req.body.gender == undefined) {
       return "fail";
     }
   }
