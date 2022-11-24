@@ -106,49 +106,49 @@ describe("User SignIn", () => {
   });
 });
 
-// describe("Send OTP", () => {
-//   it("should sent otp successfully", async () => { 
-//     const _userid = AesEncryption.encrypt(userData.userid);
-//     const token = jwt.sign({ _userid }, secretKey, {
-//       expiresIn: "1w",
-//     });
-//     const userBody = {
-//       "userid": userData.userid,
-//       "token": token
-//     }
-//     const response = await registration_servie.sendotp(userBody as AppUserOTP);
-//     expect(response).toHaveProperty(["status"]);
-//     expect(response).toHaveProperty(["data"]);
-//     expect(response.status).toBe("success");
-//   })
+describe("Send OTP", () => {
+  it("should sent otp successfully", async () => { 
+    const _userid = AesEncryption.encrypt(userData.userid);
+    const token = jwt.sign({ _userid }, secretKey, {
+      expiresIn: "1w",
+    });
+    const userBody = {
+      "userid": userData.userid,
+      "token": token
+    }
+    const response = await registration_servie.sendotp(userBody as AppUserOTP);
+    expect(response).toHaveProperty(["status"]);
+    expect(response).toHaveProperty(["data"]);
+    expect(response.status).toBe("success");
+  })
 
-//   it("should return error when userid from token and userid doesn't match", async () => {
-//     const _userid = AesEncryption.encrypt(userData.wronguserid);
-//     const token = jwt.sign({ _userid }, secretKey, {
-//       expiresIn: "1w",
-//     });
-//     const userBody = {
-//       "userid": userData.userid,
-//       "token": token
-//     }
-//     const response = await registration_servie.sendotp(userBody as AppUserOTP);
-//     expect(response).toHaveProperty(["status"]);
-//     expect(response).toHaveProperty(["data"]);
-//     expect(response.status).toBe("unauthorized");
-//   });
+  it("should return error when userid from token and userid doesn't match", async () => {
+    const _userid = AesEncryption.encrypt(userData.wronguserid);
+    const token = jwt.sign({ _userid }, secretKey, {
+      expiresIn: "1w",
+    });
+    const userBody = {
+      "userid": userData.userid,
+      "token": token
+    }
+    const response = await registration_servie.sendotp(userBody as AppUserOTP);
+    expect(response).toHaveProperty(["status"]);
+    expect(response).toHaveProperty(["data"]);
+    expect(response.status).toBe("unauthorized");
+  });
 
-//   it("should return error when mail is not valid", async () => {
-//     const _userid = AesEncryption.encrypt(userData.wrongmail);
-//     const token = jwt.sign({ _userid }, secretKey, {
-//       expiresIn: "1w",
-//     });
-//     const userBody = {
-//       "userid": userData.wrongmail,
-//       "token": token
-//     }
-//     const response = await registration_servie.sendotp(userBody as AppUserOTP);
-//     expect(response).toHaveProperty(["status"]);
-//     expect(response).toHaveProperty(["data"]);
-//     expect(response.status).toBe("invalidmail");
-//   });
-// });
+  it("should return error when mail is not valid", async () => {
+    const _userid = AesEncryption.encrypt(userData.wrongmail);
+    const token = jwt.sign({ _userid }, secretKey, {
+      expiresIn: "1w",
+    });
+    const userBody = {
+      "userid": userData.wrongmail,
+      "token": token
+    }
+    const response = await registration_servie.sendotp(userBody as AppUserOTP);
+    expect(response).toHaveProperty(["status"]);
+    expect(response).toHaveProperty(["data"]);
+    expect(response.status).toBe("invalidmail");
+  });
+});
