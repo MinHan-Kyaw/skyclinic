@@ -20,6 +20,21 @@ variables:
   vmImageName: 'ubuntu-latest'
 
 stages:
+- stage: Test
+  displayName: Run Test Cases
+  jobs:
+  - job: Test
+    displayName: Test
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+      - task: NodeTool@0
+        inputs: 
+          versionSpec: '10.x'
+        displayName: 'Install Node.is'
+      - script: |
+        npm install
+        npm test
 - stage: Build
   displayName: Build and push stage
   jobs:
