@@ -16,7 +16,7 @@ const jwt = require("jsonwebtoken");
 
 const { secretKey, algorithms } = environment.getJWTConfig();
 
-const bucket_url = "http://192.168.1.20:9000/skcbucket/";
+const bucket_url = "http://192.168.1.17:9000/skcbucket/";
 const identifiedphoto_url = bucket_url + "identifiedphotos/";
 const profile_url = bucket_url + "profiles/";
 
@@ -52,171 +52,165 @@ export class UserServices {
       // if (token) {
       //   const doc = jwt.decode(token, secretKey, algorithms);
 
-        const _userid = AesEncryption.encrypt(userid);
+      const _userid = AesEncryption.encrypt(userid);
       //   // check request token valid or not
       //   if (doc["_userid"] == _userid) {
-          var files: any = req.files;
-          const profileimage = files?.find(
-            (x: any) => x.fieldname == "profileimage"
+      var files: any = req.files;
+      const profileimage = files?.find(
+        (x: any) => x.fieldname == "profileimage"
+      );
+      const identifiedphoto_front = files?.find(
+        (x: any) => x.fieldname == "identifiedphoto_front"
+      );
+      const identifiedphoto_back = files?.find(
+        (x: any) => x.fieldname == "identifiedphoto_back"
+      );
+      if (
+        profileimage == undefined ||
+        identifiedphoto_front == undefined ||
+        identifiedphoto_back == undefined
+      ) {
+        data = {};
+        status = "insufficient";
+        return { status, data };
+      }
+      // Check Image Type
+      if (
+        !checkFileType(profileimage.mimetype) ||
+        !checkFileType(identifiedphoto_front.mimetype) ||
+        !checkFileType(identifiedphoto_back.mimetype)
+      ) {
+        data = {};
+        status = "invalidimg";
+        return { status, data };
+      }
+
+      const appuser_filter = {
+        $or: [{ username: _userid }, { phone: _userid }],
+      };
+      const app_user = await this.appusers.findOne(appuser_filter);
+      // Check user exists in app user table
+      if (app_user && app_user.is_delete == false) {
+        const skcuser_filter = { appuserid: app_user.appuserid };
+        // check user exist or not
+        const checkexist = await this.skcuser.findOne(skcuser_filter);
+        if (checkexist) {
+          //profile image upload
+          const profileimagename = generateFilename(profileimage.originalname);
+          const await_profile = await minioClient.fPutObject(
+            "skcbucket",
+            "profiles/" + profileimagename,
+
+            profileimage["path"],
+            { "Content-Type": "application/octet-stream" }
           );
-          const identifiedphoto_front = files?.find(
-            (x: any) => x.fieldname == "identifiedphoto_front"
-          );
-          const identifiedphoto_back = files?.find(
-            (x: any) => x.fieldname == "identifiedphoto_back"
-          );
-          if (
-            profileimage == undefined ||
-            identifiedphoto_front == undefined ||
-            identifiedphoto_back == undefined
-          ) {
-            data = {};
-            status = "insufficient";
-            return { status, data };
-          }
-          // Check Image Type
-          if (
-            !checkFileType(profileimage.mimetype) ||
-            !checkFileType(identifiedphoto_front.mimetype) ||
-            !checkFileType(identifiedphoto_back.mimetype)
-          ) {
-            data = {};
-            status = "invalidimg";
-            return { status, data };
-          }
-
-          const appuser_filter = {
-            $or: [{ username: _userid }, { phone: _userid }],
-          };
-          const app_user = await this.appusers.findOne(appuser_filter);
-          // Check user exists in app user table
-          if (app_user && app_user.is_delete == false) {
-            const skcuser_filter = { appuserid: app_user.appuserid };
-            // check user exist or not
-            const checkexist = await this.skcuser.findOne(skcuser_filter);
-            console.log("here 2");
-            if (checkexist) {
-              //profile image upload
-              const profileimagename = generateFilename(
-                profileimage.originalname
-              );
-              const await_profile = await minioClient.fPutObject(
-                "skcbucket",
-                "profiles/" + profileimagename,
-
-                profileimage["path"],
-                { "Content-Type": "application/octet-stream" }
-              );
-              fs.unlink(profileimage["path"], (err) => {
-                if (err) {
-                  throw err;
-                }
-              });
-
-
-              //Identified front image upload
-
-              const identifiedphotofrontname = generateFilename(
-                identifiedphoto_front.originalname
-              );
-              const await_identifiedphoto_front = await minioClient.fPutObject(
-                "skcbucket",
-                "identifiedphotos/" + identifiedphotofrontname,
-                identifiedphoto_front["path"],
-                { "Content-Type": "application/octet-stream" }
-              );
-
-              // remove temporary folder for images
-              fs.unlink(identifiedphoto_front["path"], (err) => {
-                if (err) {
-                  throw err;
-                }
-              });
-
-              //Identified back image upload
-              const identifiedphotobackname = generateFilename(
-                identifiedphoto_back.originalname
-              );
-              const await_identifiedphoto_back = await minioClient.fPutObject(
-                "skcbucket",
-                "identifiedphotos/" + identifiedphotobackname,
-                identifiedphoto_back["path"],
-                { "Content-Type": "application/octet-stream" }
-              );
-
-              fs.unlink(identifiedphoto_back["path"], (err) => {
-                if (err) {
-                  throw err;
-                }
-              });
-              
-              const today = new Date();
-              var year = req.body.dob[0];
-          // let year = d.getFullYear();
-              var age = today.getFullYear() - year;
-              const skcuser_params: ISKCUser = {
-                skcuserid: checkexist.skcuserid,
-                appuserid: checkexist.appuserid,
-                address: AesEncryption.encrypt(req.body.address),
-                gender: AesEncryption.encrypt(req.body.gender),
-                usertype: checkexist.usertype,
-                identifiedphoto_front: AesEncryption.encrypt(
-                  identifiedphotofrontname
-                ),
-                identifiedphoto_back: AesEncryption.encrypt(
-                  identifiedphotobackname
-                ),
-                identifiednumber: AesEncryption.encrypt(
-                  req.body.identifiednumber
-                ),
-                fullname: AesEncryption.encrypt(req.body.fullname),
-                othername: AesEncryption.encrypt(req.body.othername),
-                email: AesEncryption.encrypt(req.body.email),
-                dob: req.body.dob,
-                bloodtype: AesEncryption.encrypt(req.body.bloodtype),
-                allergicdrug: AesEncryption.encrypt(req.body.allergicdrug),
-                cmt: AesEncryption.encrypt(req.body.cmt),
-                profileimage: AesEncryption.encrypt(profileimagename),
-                created_date: checkexist.created_date,
-                modified_date: new Date(),
-                created_user: checkexist.created_user,
-                modified_user: checkexist.modified_user,
-                is_delete: checkexist.is_delete,
-                is_active: checkexist.is_active,
-                age: age
-              };
-              const result = await this.skcuser.findOneAndUpdate(
-                { appuserid: app_user.appuserid },
-                skcuser_params,
-                { new: true }
-              );
-              list.push({
-                _id: result._id,
-                skcuserid: result.skcuserid,
-                appuserid: result.appuserid,
-                name: AesEncryption.decrypt(result.name),
-                address: AesEncryption.decrypt(result.address),
-                gender: AesEncryption.decrypt(result.gender),
-                usertype: AesEncryption.decrypt(result.usertype),
-                identifiedPhoto: AesEncryption.decrypt(result.identifiedPhoto),
-                profileImage: AesEncryption.decrypt(result.profileImage),
-                modification_notes: result.modification_notes,
-                __v: result.__v,
-              });
-
-              data = {};
-              status = "success";
-              return { status, data };
-            } else {
-              data = {};
-              status = "unauthorized";
-              return { status, data };
+          fs.unlink(profileimage["path"], (err) => {
+            if (err) {
+              throw err;
             }
-          } else {
-            data = {};
-            status = "invalid";
-            return { status, data };
-          }
+          });
+
+          //Identified front image upload
+
+          const identifiedphotofrontname = generateFilename(
+            identifiedphoto_front.originalname
+          );
+          const await_identifiedphoto_front = await minioClient.fPutObject(
+            "skcbucket",
+            "identifiedphotos/" + identifiedphotofrontname,
+            identifiedphoto_front["path"],
+            { "Content-Type": "application/octet-stream" }
+          );
+
+          // remove temporary folder for images
+          fs.unlink(identifiedphoto_front["path"], (err) => {
+            if (err) {
+              throw err;
+            }
+          });
+
+          //Identified back image upload
+          const identifiedphotobackname = generateFilename(
+            identifiedphoto_back.originalname
+          );
+          const await_identifiedphoto_back = await minioClient.fPutObject(
+            "skcbucket",
+            "identifiedphotos/" + identifiedphotobackname,
+            identifiedphoto_back["path"],
+            { "Content-Type": "application/octet-stream" }
+          );
+
+          fs.unlink(identifiedphoto_back["path"], (err) => {
+            if (err) {
+              throw err;
+            }
+          });
+
+          const today = new Date();
+          var year = req.body.dob[0];
+          // let year = d.getFullYear();
+          var age = today.getFullYear() - year;
+          const skcuser_params: ISKCUser = {
+            skcuserid: checkexist.skcuserid,
+            appuserid: checkexist.appuserid,
+            address: AesEncryption.encrypt(req.body.address),
+            gender: AesEncryption.encrypt(req.body.gender),
+            usertype: checkexist.usertype,
+            identifiedphoto_front: AesEncryption.encrypt(
+              identifiedphotofrontname
+            ),
+            identifiedphoto_back: AesEncryption.encrypt(
+              identifiedphotobackname
+            ),
+            identifiednumber: AesEncryption.encrypt(req.body.identifiednumber),
+            fullname: AesEncryption.encrypt(req.body.fullname),
+            othername: AesEncryption.encrypt(req.body.othername),
+            email: AesEncryption.encrypt(req.body.email),
+            dob: req.body.dob,
+            bloodtype: AesEncryption.encrypt(req.body.bloodtype),
+            allergicdrug: AesEncryption.encrypt(req.body.allergicdrug),
+            cmt: AesEncryption.encrypt(req.body.cmt),
+            profileimage: AesEncryption.encrypt(profileimagename),
+            created_date: checkexist.created_date,
+            modified_date: new Date(),
+            created_user: checkexist.created_user,
+            modified_user: checkexist.modified_user,
+            is_delete: checkexist.is_delete,
+            is_active: checkexist.is_active,
+            age: age,
+          };
+          const result = await this.skcuser.findOneAndUpdate(
+            { appuserid: app_user.appuserid },
+            skcuser_params,
+            { new: true }
+          );
+          list.push({
+            _id: result._id,
+            skcuserid: result.skcuserid,
+            appuserid: result.appuserid,
+            name: AesEncryption.decrypt(result.name),
+            address: AesEncryption.decrypt(result.address),
+            gender: AesEncryption.decrypt(result.gender),
+            usertype: AesEncryption.decrypt(result.usertype),
+            identifiedPhoto: AesEncryption.decrypt(result.identifiedPhoto),
+            profileImage: AesEncryption.decrypt(result.profileImage),
+            modification_notes: result.modification_notes,
+            __v: result.__v,
+          });
+
+          data = {};
+          status = "success";
+          return { status, data };
+        } else {
+          data = {};
+          status = "unauthorized";
+          return { status, data };
+        }
+      } else {
+        data = {};
+        status = "invalid";
+        return { status, data };
+      }
       //   } else {
       //     data = {};
       //     status = "unauthorized";
@@ -233,20 +227,234 @@ export class UserServices {
       return { status, data };
     }
   }
-   //get all user by type (age, active/inactive)
-   public async getbytype(req: Request): Promise<{ status: string; data: any }> {
+
+  // update profile
+  public async updateprofile(
+    req: Request
+  ): Promise<{ status: string; data: any }> {
+    var data: any;
+    var status: any;
+    var list: any = [];
+    try {
+      // check request parameter contain or not
+      const check = this.checkskcuserrequest(req);
+      if (check == "fail") {
+        data = {};
+        status = "insufficient";
+        return { status, data };
+      }
+      const { userid } = req.body;
+
+      const _userid = AesEncryption.encrypt(userid);
+
+      var files: any = req.files;
+      const profileimage = files?.find(
+        (x: any) => x.fieldname == "profileimage"
+      );
+      const identifiedphoto_front = files?.find(
+        (x: any) => x.fieldname == "identifiedphoto_front"
+      );
+      const identifiedphoto_back = files?.find(
+        (x: any) => x.fieldname == "identifiedphoto_back"
+      );
+
+      // Check Image Type
+      if (
+        (profileimage != undefined && !checkFileType(profileimage.mimetype)) ||
+        (identifiedphoto_front != undefined &&
+          !checkFileType(identifiedphoto_front.mimetype)) ||
+        (identifiedphoto_back != undefined &&
+          !checkFileType(identifiedphoto_back.mimetype))
+      ) {
+        data = {};
+        status = "invalidimg";
+        return { status, data };
+      }
+
+      const appuser_filter = {
+        $or: [{ username: _userid }, { phone: _userid }],
+      };
+      const app_user = await this.appusers.findOne(appuser_filter);
+      // Check user exists in app user table
+      if (app_user && app_user.is_delete == false) {
+        const skcuser_filter = { appuserid: app_user.appuserid };
+        // check user exist or not
+        const checkexist = await this.skcuser.findOne(skcuser_filter);
+        if (checkexist) {
+          var profileimagename = AesEncryption.decrypt(app_user.profileimage);
+          var identifiedphotofrontname = AesEncryption.decrypt(
+            app_user.identifiedphoto_front
+          );
+          var identifiedphotobackname = AesEncryption.decrypt(
+            app_user.identifiedphoto_back
+          );
+          //profile image upload
+          if (profileimage != undefined) {
+            const delete_profile = await minioClient.removeObject(
+              "skcbucket",
+              "profiles/" + app_user.profileimage
+            );
+            profileimagename = generateFilename(profileimage.originalname);
+            const await_profile = await minioClient.fPutObject(
+              "skcbucket",
+              "profiles/" + profileimagename,
+
+              profileimage["path"],
+              { "Content-Type": "application/octet-stream" }
+            );
+            fs.unlink(profileimage["path"], (err) => {
+              if (err) {
+                throw err;
+              }
+            });
+          }
+
+          //Identified front image upload
+          if (identifiedphoto_front != undefined) {
+            const delete_identifiedphoto_front = await minioClient.removeObject(
+              "skcbucket",
+              "identifiedphotos/" + app_user.identifiedphoto_front
+            );
+            identifiedphotofrontname = generateFilename(
+              identifiedphoto_front.originalname
+            );
+            const await_identifiedphoto_front = await minioClient.fPutObject(
+              "skcbucket",
+              "identifiedphotos/" + identifiedphotofrontname,
+              identifiedphoto_front["path"],
+              { "Content-Type": "application/octet-stream" }
+            );
+
+            // remove temporary folder for images
+            fs.unlink(identifiedphoto_front["path"], (err) => {
+              if (err) {
+                throw err;
+              }
+            });
+          }
+
+          if (identifiedphoto_back != undefined) {
+            const delete_identifiedphoto_back = await minioClient.removeObject(
+              "skcbucket",
+              "identifiedphotos/" + app_user.identifiedphoto_back
+            );
+            //Identified back image upload
+            identifiedphotobackname = generateFilename(
+              identifiedphoto_back.originalname
+            );
+            const await_identifiedphoto_back = await minioClient.fPutObject(
+              "skcbucket",
+              "identifiedphotos/" + identifiedphotobackname,
+              identifiedphoto_back["path"],
+              { "Content-Type": "application/octet-stream" }
+            );
+
+            fs.unlink(identifiedphoto_back["path"], (err) => {
+              if (err) {
+                throw err;
+              }
+            });
+          }
+
+          const today = new Date();
+          var year = req.body.dob[0];
+          // let year = d.getFullYear();
+          var age = today.getFullYear() - year;
+          const skcuser_params: ISKCUser = {
+            skcuserid: checkexist.skcuserid,
+            appuserid: checkexist.appuserid,
+            address: AesEncryption.encrypt(req.body.address),
+            gender: AesEncryption.encrypt(req.body.gender),
+            usertype: checkexist.usertype,
+            identifiedphoto_front: AesEncryption.encrypt(
+              identifiedphotofrontname
+            ),
+            identifiedphoto_back: AesEncryption.encrypt(
+              identifiedphotobackname
+            ),
+            identifiednumber: AesEncryption.encrypt(req.body.identifiednumber),
+            fullname: AesEncryption.encrypt(req.body.fullname),
+            othername: AesEncryption.encrypt(req.body.othername),
+            email: AesEncryption.encrypt(req.body.email),
+            dob: req.body.dob,
+            bloodtype: AesEncryption.encrypt(req.body.bloodtype),
+            allergicdrug: AesEncryption.encrypt(req.body.allergicdrug),
+            cmt: AesEncryption.encrypt(req.body.cmt),
+            profileimage: AesEncryption.encrypt(profileimagename),
+            created_date: checkexist.created_date,
+            modified_date: new Date(),
+            created_user: checkexist.created_user,
+            modified_user: checkexist.modified_user,
+            is_delete: checkexist.is_delete,
+            is_active: checkexist.is_active,
+            age: age,
+          };
+          const result = await this.skcuser.findOneAndUpdate(
+            { appuserid: app_user.appuserid },
+            skcuser_params,
+            { new: true }
+          );
+          data = {
+            address: AesEncryption.decrypt(result.address),
+            gender: AesEncryption.decrypt(result.gender),
+            identifiedphoto_front:
+              identifiedphoto_url +
+              AesEncryption.decrypt(result.identifiedphoto_front),
+            identifiedphoto_back:
+              identifiedphoto_url +
+              AesEncryption.decrypt(result.identifiedphoto_back),
+            identifiednumber: AesEncryption.decrypt(result.identifiednumber),
+            fullname: AesEncryption.decrypt(result.fullname),
+            othername: AesEncryption.decrypt(result.othername),
+            email: AesEncryption.decrypt(result.email),
+            dob: req.body.dob,
+            bloodtype: AesEncryption.decrypt(result.bloodtype),
+            allergicdrug: AesEncryption.decrypt(result.allergicdrug),
+            cmt: AesEncryption.decrypt(result.cmt),
+            profileimage:
+              profile_url + AesEncryption.decrypt(result.profileimage),
+          };
+          status = "success";
+          return { status, data };
+        } else {
+          data = {};
+          status = "unauthorized";
+          return { status, data };
+        }
+      } else {
+        data = {};
+        status = "invalid";
+        return { status, data };
+      }
+      //   } else {
+      //     data = {};
+      //     status = "unauthorized";
+      //     return { status, data };
+      //   }
+      // } else {
+      //   data = {};
+      //   status = "unauthorized";
+      //   return { status, data };
+      // }
+    } catch (e) {
+      data = e;
+      status = "fail";
+      return { status, data };
+    }
+  }
+  //get all user by type (age, active/inactive)
+  public async getbytype(req: Request): Promise<{ status: string; data: any }> {
     var data: any;
     var status: any;
     var list: any = [];
     // console.log("herere");
     try {
-      
       // check request parameter contain or not
       const check = this.checkgettypeuserrequest(req);
       // console.log("herer");
       if (check == "fail") {
         data = {};
-        status = "insufficient"; 
+        status = "insufficient";
         return { status, data };
       }
       // const { userid } = req.body;
@@ -256,25 +464,30 @@ export class UserServices {
       // const doc = jwt.decode(token, secretKey, algorithms);
       // check request token true or false
       // if (doc["_userid"] == AesEncryption.encrypt(userid)) {
-      var skcuserlist:any;
-      if(req.body.age == 0){
-        if (req.body.gender == ""){
-          skcuserlist = await this.skcuser.find({ is_active: req.body.active });  
+      var skcuserlist: any;
+      if (req.body.age == 0) {
+        if (req.body.gender == "") {
+          skcuserlist = await this.skcuser.find({ is_active: req.body.active });
+        } else {
+          skcuserlist = await this.skcuser.find({
+            is_active: req.body.active,
+            gender: req.body.gender,
+          });
         }
-        else{
-          skcuserlist = await this.skcuser.find({ is_active: req.body.active, gender: req.body.gender });
+      } else if (req.body.gender == "") {
+        if (req.body.age == 0) {
+          skcuserlist = await this.skcuser.find({ is_active: req.body.active });
+        } else {
+          skcuserlist = await this.skcuser.find({
+            is_active: req.body.active,
+            age: req.body.age,
+          });
         }
-      }
-      else if(req.body.gender == ""){
-        if (req.body.age == 0){
-          skcuserlist = await this.skcuser.find({ is_active: req.body.active });  
-        }
-        else{
-          skcuserlist = await this.skcuser.find({ is_active: req.body.active, age: req.body.age });
-        }
-      }
-      else{
-        skcuserlist = await this.skcuser.find({ age: req.body.age, is_active: req.body.active });
+      } else {
+        skcuserlist = await this.skcuser.find({
+          age: req.body.age,
+          is_active: req.body.active,
+        });
       }
       console.log(skcuserlist);
       const appuserlist = await this.appusers.find({});
@@ -412,62 +625,60 @@ export class UserServices {
       //   const doc = jwt.decode(token, secretKey, algorithms);
       //   // check request token valid or not
       //   if (doc["_userid"] == _userid) {
-          const appuser_filter = {
-            $or: [{ username: _userid }, { phone: _userid }],
+      const appuser_filter = {
+        $or: [{ username: _userid }, { phone: _userid }],
+      };
+      var appuser = await this.appusers.findOne(appuser_filter);
+      //check user is deleted or not
+      if (appuser && appuser["is_delete"] == false) {
+        const skcuser_filter = {
+          appuserid: appuser.appuserid,
+        };
+        const skcuser = await this.skcuser.findOne(skcuser_filter);
+        // Check user exist in skc user table and it is active
+        if (skcuser && skcuser["is_delete"] == false) {
+          var result: RSKCUser = {
+            username: AesEncryption.decrypt(appuser.username),
+            phone: AesEncryption.decrypt(appuser.phone),
+            fullname: AesEncryption.decrypt(skcuser.fullname),
+            othername: AesEncryption.decrypt(skcuser.othername),
+            email: AesEncryption.decrypt(skcuser.email),
+            address: AesEncryption.decrypt(skcuser.address),
+            dob: skcuser.dob,
+            gender: AesEncryption.decrypt(skcuser.gender),
+            bloodtype: AesEncryption.decrypt(skcuser.bloodtype),
+            allergicdrug: AesEncryption.decrypt(skcuser.allergicdrug),
+            cmt: AesEncryption.decrypt(skcuser.cmt),
+            usertype: AesEncryption.decrypt(skcuser.usertype),
+            identifiednumber: AesEncryption.decrypt(skcuser.identifiednumber),
+            identifiedphoto_front:
+              identifiedphoto_url +
+              AesEncryption.decrypt(skcuser.identifiedphoto_front),
+            identifiedphoto_back:
+              identifiedphoto_url +
+              AesEncryption.decrypt(skcuser.identifiedphoto_back),
+            profileimage:
+              profile_url + AesEncryption.decrypt(skcuser.profileimage),
+            age: skcuser.age,
           };
-          var appuser = await this.appusers.findOne(appuser_filter);
-          //check user is deleted or not
-          if (appuser && appuser["is_delete"] == false) {
-            const skcuser_filter = {
-              appuserid: appuser.appuserid,
-            };
-            const skcuser = await this.skcuser.findOne(skcuser_filter);
-            // Check user exist in skc user table and it is active
-            if (skcuser && skcuser["is_delete"] == false) {
-              var result: RSKCUser = {
-                username: AesEncryption.decrypt(appuser.username),
-                phone: AesEncryption.decrypt(appuser.phone),
-                fullname: AesEncryption.decrypt(skcuser.fullname),
-                othername: AesEncryption.decrypt(skcuser.othername),
-                email: AesEncryption.decrypt(skcuser.email),
-                address: AesEncryption.decrypt(skcuser.address),
-                dob: skcuser.dob,
-                gender: AesEncryption.decrypt(skcuser.gender),
-                bloodtype: AesEncryption.decrypt(skcuser.bloodtype),
-                allergicdrug: AesEncryption.decrypt(skcuser.allergicdrug),
-                cmt: AesEncryption.decrypt(skcuser.cmt),
-                usertype: AesEncryption.decrypt(skcuser.usertype),
-                identifiednumber: AesEncryption.decrypt(
-                  skcuser.identifiednumber
-                ),
-                identifiedphoto_front:
-                  identifiedphoto_url +
-                  AesEncryption.decrypt(skcuser.identifiedphoto_front),
-                identifiedphoto_back:
-                  identifiedphoto_url +
-                  AesEncryption.decrypt(skcuser.identifiedphoto_back),
-                profileimage:
-                  profile_url + AesEncryption.decrypt(skcuser.profileimage),
-                age: skcuser.age
-              };
-              data = result;
-              status = "success";
-              return { status, data };
-            } else {
-              data = {};
-              status = "invalid";
-              return { status, data };
-            }
-          } else {
-            data = {};
-            status = "invalid";
-            return { status, data };
-          }
-        // } else {
-        //   data = {};
-        //   status = "unauthorized";
-        //   return { status, data };
-        // }
+          data = result;
+          status = "success";
+          return { status, data };
+        } else {
+          data = {};
+          status = "invalid";
+          return { status, data };
+        }
+      } else {
+        data = {};
+        status = "invalid";
+        return { status, data };
+      }
+      // } else {
+      //   data = {};
+      //   status = "unauthorized";
+      //   return { status, data };
+      // }
       // } else {
       //   data = {};
       //   status = "unauthorized";
@@ -497,48 +708,48 @@ export class UserServices {
       }
       // check request token exist or not
       // if (token) {
-        // const doc = jwt.decode(token, secretKey, algorithms);
-        // check request token valid or not
-        // if (doc["_userid"] == AesEncryption.encrypt(userid)) {
-          const skcuser_filter = { skcuserid: req.body.skcuserid };
-          if (req.body.skcuserid) {
-            const skcuser_value = await this.skcuser.findOne(skcuser_filter);
-            const appuserlist = await this.appusers.find({});
-            //check user exist or not
-            if (skcuser_value) {
-              if (skcuser_value.is_delete) {
-                data = {};
-                status = "invalid";
-                return { status, data };
-              }
-              let appuser_value: any;
-              appuser_value = appuserlist.filter(
-                (appuser) => appuser.appuserid === skcuser_value["appuserid"]
-              );
-              skcuser_value["modification_notes"][0]["is_delete"] = true;
-              await this.skcuser.findOneAndUpdate(
-                { skcuserid: req.body.skcuserid },
-                skcuser_value
-              );
-              appuser_value[0]["modification_notes"][0]["is_delete"] = true;
-              await this.appusers.findOneAndUpdate(
-                { appuserid: appuser_value[0]["appuserid"] },
-                appuser_value[0]
-              );
-            }
+      // const doc = jwt.decode(token, secretKey, algorithms);
+      // check request token valid or not
+      // if (doc["_userid"] == AesEncryption.encrypt(userid)) {
+      const skcuser_filter = { skcuserid: req.body.skcuserid };
+      if (req.body.skcuserid) {
+        const skcuser_value = await this.skcuser.findOne(skcuser_filter);
+        const appuserlist = await this.appusers.find({});
+        //check user exist or not
+        if (skcuser_value) {
+          if (skcuser_value.is_delete) {
             data = {};
-            status = "success";
-            return { status, data };
-          } else {
-            data = {};
-            status = "fail";
+            status = "invalid";
             return { status, data };
           }
-        // } else {
-        //   data = {};
-        //   status = "invalid";
-        //   return { status, data };
-        // }
+          let appuser_value: any;
+          appuser_value = appuserlist.filter(
+            (appuser) => appuser.appuserid === skcuser_value["appuserid"]
+          );
+          skcuser_value["modification_notes"][0]["is_delete"] = true;
+          await this.skcuser.findOneAndUpdate(
+            { skcuserid: req.body.skcuserid },
+            skcuser_value
+          );
+          appuser_value[0]["modification_notes"][0]["is_delete"] = true;
+          await this.appusers.findOneAndUpdate(
+            { appuserid: appuser_value[0]["appuserid"] },
+            appuser_value[0]
+          );
+        }
+        data = {};
+        status = "success";
+        return { status, data };
+      } else {
+        data = {};
+        status = "fail";
+        return { status, data };
+      }
+      // } else {
+      //   data = {};
+      //   status = "invalid";
+      //   return { status, data };
+      // }
       // } else {
       //   data = {};
       //   status = "unauthorized";
@@ -567,23 +778,37 @@ export class UserServices {
   public checkskcuserrequest(req: Request) {
     // check request parameter contain or not
     if (
-      // req.files?.length != 2 &&
-      req.body.userid ==
-      //  &&
-      // req.body.username &&
-      // req.body.address &&
-      // req.body.gender &&
-      // req.body.fullname &&
-      // req.body.othername &&
-      // req.body.email &&
-      // req.body.dob &&
-      // req.body.bloodtype &&
-      // req.body.allergicdrug &&
-      // req.body.cmt &&
-      // req.body.identifiednumber &&
-      // req.body.identifiedphoto &&
-      // req.body.profileimage
-      undefined
+      (req.body.userid &&
+        req.body.username &&
+        req.body.address &&
+        req.body.gender &&
+        req.body.fullname &&
+        req.body.othername &&
+        req.body.email &&
+        req.body.dob &&
+        req.body.bloodtype &&
+        req.body.allergicdrug &&
+        req.body.cmt) == undefined ||
+      req.files?.length != 3
+    ) {
+      return "fail";
+    }
+  }
+
+  public checkupdateprofilerequest(req: Request) {
+    // check request parameter contain or not
+    if (
+      (req.body.userid &&
+        req.body.username &&
+        req.body.address &&
+        req.body.gender &&
+        req.body.fullname &&
+        req.body.othername &&
+        req.body.email &&
+        req.body.dob &&
+        req.body.bloodtype &&
+        req.body.allergicdrug &&
+        req.body.cmt) == undefined
     ) {
       return "fail";
     }
