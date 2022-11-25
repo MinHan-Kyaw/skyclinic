@@ -237,7 +237,7 @@ export class UserServices {
     var list: any = [];
     try {
       // check request parameter contain or not
-      const check = this.checkskcuserrequest(req);
+      const check = this.checkupdateprofilerequest(req);
       if (check == "fail") {
         data = {};
         status = "insufficient";
@@ -279,21 +279,24 @@ export class UserServices {
       if (app_user && app_user.is_delete == false) {
         const skcuser_filter = { appuserid: app_user.appuserid };
         // check user exist or not
-        const checkexist = await this.skcuser.findOne(skcuser_filter);
-        if (checkexist) {
-          var profileimagename = AesEncryption.decrypt(app_user.profileimage);
+        const oldskcuser = await this.skcuser.findOne(skcuser_filter);
+        if (oldskcuser) {
+          var profileimagename = AesEncryption.decrypt(oldskcuser.profileimage);
           var identifiedphotofrontname = AesEncryption.decrypt(
-            app_user.identifiedphoto_front
+            oldskcuser.identifiedphoto_front
           );
           var identifiedphotobackname = AesEncryption.decrypt(
-            app_user.identifiedphoto_back
+            oldskcuser.identifiedphoto_back
           );
           //profile image upload
           if (profileimage != undefined) {
-            const delete_profile = await minioClient.removeObject(
-              "skcbucket",
-              "profiles/" + app_user.profileimage
-            );
+            
+            minioClient.removeObject('skcbucket', "profiles/" + oldskcuser.profileimage, function(err) {
+              if (err) {
+                return console.log('Unable to remove object', err)
+              }
+              console.log('Removed profile')
+            })
             profileimagename = generateFilename(profileimage.originalname);
             const await_profile = await minioClient.fPutObject(
               "skcbucket",
@@ -311,10 +314,13 @@ export class UserServices {
 
           //Identified front image upload
           if (identifiedphoto_front != undefined) {
-            const delete_identifiedphoto_front = await minioClient.removeObject(
-              "skcbucket",
-              "identifiedphotos/" + app_user.identifiedphoto_front
-            );
+            console.log("identifiedphotos/" + oldskcuser.identifiedphoto_front);
+            minioClient.removeObject('skcbucket', "identifiedphotos/" + oldskcuser.identifiedphoto_front, function(err) {
+              if (err) {
+                return console.log('Unable to remove object', err)
+              }
+              console.log('Removed Identified Photo Front.')
+            })
             identifiedphotofrontname = generateFilename(
               identifiedphoto_front.originalname
             );
@@ -334,10 +340,12 @@ export class UserServices {
           }
 
           if (identifiedphoto_back != undefined) {
-            const delete_identifiedphoto_back = await minioClient.removeObject(
-              "skcbucket",
-              "identifiedphotos/" + app_user.identifiedphoto_back
-            );
+            minioClient.removeObject('skcbucket', "identifiedphotos/" + oldskcuser.identifiedphoto_back, function(err) {
+              if (err) {
+                return console.log('Unable to remove object', err)
+              }
+              console.log('Removed Identified Photo Back.')
+            })
             //Identified back image upload
             identifiedphotobackname = generateFilename(
               identifiedphoto_back.originalname
@@ -361,11 +369,11 @@ export class UserServices {
           // let year = d.getFullYear();
           var age = today.getFullYear() - year;
           const skcuser_params: ISKCUser = {
-            skcuserid: checkexist.skcuserid,
-            appuserid: checkexist.appuserid,
+            skcuserid: oldskcuser.skcuserid,
+            appuserid: oldskcuser.appuserid,
             address: AesEncryption.encrypt(req.body.address),
             gender: AesEncryption.encrypt(req.body.gender),
-            usertype: checkexist.usertype,
+            usertype: oldskcuser.usertype,
             identifiedphoto_front: AesEncryption.encrypt(
               identifiedphotofrontname
             ),
@@ -381,12 +389,12 @@ export class UserServices {
             allergicdrug: AesEncryption.encrypt(req.body.allergicdrug),
             cmt: AesEncryption.encrypt(req.body.cmt),
             profileimage: AesEncryption.encrypt(profileimagename),
-            created_date: checkexist.created_date,
+            created_date: oldskcuser.created_date,
             modified_date: new Date(),
-            created_user: checkexist.created_user,
-            modified_user: checkexist.modified_user,
-            is_delete: checkexist.is_delete,
-            is_active: checkexist.is_active,
+            created_user: oldskcuser.created_user,
+            modified_user: oldskcuser.modified_user,
+            is_delete: oldskcuser.is_delete,
+            is_active: oldskcuser.is_active,
             age: age,
           };
           const result = await this.skcuser.findOneAndUpdate(
@@ -799,7 +807,6 @@ export class UserServices {
     // check request parameter contain or not
     if (
       (req.body.userid &&
-        req.body.username &&
         req.body.address &&
         req.body.gender &&
         req.body.fullname &&
