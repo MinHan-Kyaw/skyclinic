@@ -184,19 +184,6 @@ export class UserServices {
             skcuser_params,
             { new: true }
           );
-          list.push({
-            _id: result._id,
-            skcuserid: result.skcuserid,
-            appuserid: result.appuserid,
-            name: AesEncryption.decrypt(result.name),
-            address: AesEncryption.decrypt(result.address),
-            gender: AesEncryption.decrypt(result.gender),
-            usertype: AesEncryption.decrypt(result.usertype),
-            identifiedPhoto: AesEncryption.decrypt(result.identifiedPhoto),
-            profileImage: AesEncryption.decrypt(result.profileImage),
-            modification_notes: result.modification_notes,
-            __v: result.__v,
-          });
 
           data = {};
           status = "success";
