@@ -1,12 +1,12 @@
 import { Request } from "express";
 import mongoose from "mongoose";
 import AesEncryption from "../common/aesEncryption";
-import { ISKCUser, RSKCUser } from "../models/skcuser.model";
-import ISKCUserClass from "../models/skcuser.model";
+// import { ISKCUser, RSKCUser } from "../models/skcuser.model";
+// import ISKCUserClass from "../models/skcuser.model";
 import AppUserClass from "../models/appuser.model";
 import { injectable } from "tsyringe";
 import environment from "../../environment";
-import getTokenFromHeader from "../common/headerToken";
+// import getTokenFromHeader from "../common/headerToken";
 import generateFilename from "../common/generateFilename";
 import minioClient from "../common/minio";
 import * as fs from "fs"; //for unlink(delete) old image in folder

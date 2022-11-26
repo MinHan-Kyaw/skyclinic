@@ -13,7 +13,7 @@ import passport from "passport";
 import { authorize } from "../middlewares/authorize";
 import Roles from "../common/roles";
 import multer = require("multer");
-import { AppReqUser, AppSignInUser, AppUserOTP } from "../models/appuser.model";
+import { AppReqUser, AppSignInUser, AppUserDetail, AppUserOTP, AppUserByType } from "../models/appuser.model";
 
 @autoInjectable()
 export default class Routes {
@@ -174,7 +174,7 @@ export default class Routes {
       passport.authenticate("jwt", { session: false }),
       authorize(Roles.ADMIN),
       async (req: Request, res: Response) => {
-        const data = await this.user_service.getbytype(req);
+        const data = await this.user_service.getbytype(req.body as unknown as AppUserByType);
         if (data.status == "success") {
           successresponse("Get User successfully", data.data, res);
         } else if (data.status == "insufficient") {
@@ -214,7 +214,7 @@ export default class Routes {
       "/user/getdetail",
       passport.authenticate("jwt", { session: false }),
       async (req: Request, res: Response) => {
-        const data = await this.user_service.getdetail(req);
+        const data = await this.user_service.getdetail(req.body as unknown as AppUserDetail);
         if (data.status == "success") {
           successresponse("Get User successfully", data.data, res);
         } else if (data.status == "insufficient") {

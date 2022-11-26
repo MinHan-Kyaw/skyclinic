@@ -25,5 +25,10 @@
     },
     "insufficientsignindata":{
         "userid": "testskc@gmail.com"
+    },
+    "userbytypedata":{
+        "age": 0,
+        "active": true,
+        "gender": "001"
     }
 }

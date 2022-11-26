@@ -23,6 +23,16 @@ export interface AppSignInUser{
     password: String,
 }
 
+export interface AppUserDetail{
+    userid: String
+}
+
+export interface AppUserByType{
+    age: Number,
+    active: boolean,
+    gender: String
+}
+
 export interface AppUserOTP{
     userid: String,
     token: String

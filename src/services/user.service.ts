@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 import AesEncryption from "../common/aesEncryption";
 import { ISKCUser, RSKCUser } from "../models/skcuser.model";
 import ISKCUserClass from "../models/skcuser.model";
-import AppUserClass from "../models/appuser.model";
+// import AppUserClass from "../models/appuser.model";
+import AppUserClass, { AppReqUser,AppSignInUser,AppUserDetail,AppUserByType } from "../models/appuser.model";
 import { injectable } from "tsyringe";
 import environment from "../../environment";
 import getTokenFromHeader from "../common/headerToken";
@@ -11,6 +12,7 @@ import generateFilename from "../common/generateFilename";
 import minioClient from "../common/minio";
 import * as fs from "fs"; //for unlink(delete) old image in folder
 import checkFileType from "../common/checkFileType";
+import Genders from "../common/gender";
 
 const jwt = require("jsonwebtoken");
 
@@ -438,13 +440,14 @@ export class UserServices {
     }
   }
   //get all user by type (age, active/inactive)
-  public async getbytype(req: Request): Promise<{ status: string; data: any }> {
+  public async getbytype(req: AppUserByType): Promise<{ status: string; data: any }> {
     var data: any;
     var status: any;
     var list: any = [];
     // console.log("herere");
     try {
       // check request parameter contain or not
+      const { age,active,gender } = req;
       const check = this.checkgettypeuserrequest(req);
       // console.log("herer");
       if (check == "fail") {
@@ -460,28 +463,28 @@ export class UserServices {
       // check request token true or false
       // if (doc["_userid"] == AesEncryption.encrypt(userid)) {
       var skcuserlist: any;
-      if (req.body.age == 0) {
-        if (req.body.gender == "") {
-          skcuserlist = await this.skcuser.find({ is_active: req.body.active });
+      if (req.age == 0) {
+        if (req.gender == "") {
+          skcuserlist = await this.skcuser.find({ is_active: req.active });
         } else {
           skcuserlist = await this.skcuser.find({
-            is_active: req.body.active,
-            gender: req.body.gender,
+            is_active: req.active,
+            gender: req.gender,
           });
         }
-      } else if (req.body.gender == "") {
-        if (req.body.age == 0) {
-          skcuserlist = await this.skcuser.find({ is_active: req.body.active });
+      } else if (req.gender == "") {
+        if (req.age == 0) {
+          skcuserlist = await this.skcuser.find({ is_active: req.active });
         } else {
           skcuserlist = await this.skcuser.find({
-            is_active: req.body.active,
-            age: req.body.age,
+            is_active: req.active,
+            age: req.age,
           });
         }
       } else {
         skcuserlist = await this.skcuser.find({
-          age: req.body.age,
-          is_active: req.body.active,
+          age: req.age,
+          is_active: req.active,
         });
       }
       console.log(skcuserlist);
@@ -515,16 +518,6 @@ export class UserServices {
       data = list;
       status = "success";
       return { status, data };
-      // } else {
-      //   data = {};
-      //   status = "unauthorized";
-      //   return { status, data };
-      // }
-      // } else {
-      //   data = {};
-      //   status = "unauthorized";
-      //   return { status, data };
-      // }
     } catch (e) {
       data = e;
       status = "fail";
@@ -600,12 +593,12 @@ export class UserServices {
     }
   }
   // Get User Detail
-  public async getdetail(req: Request): Promise<{ status: string; data: any }> {
+  public async getdetail(req: AppUserDetail): Promise<{ status: string; data: any }> {
     var data: any;
     var status: any;
     var list: any = [];
     try {
-      const { userid } = req.body;
+      const { userid } = req;
       const _userid = AesEncryption.encrypt(userid);
       // const token = getTokenFromHeader(req);
       // // check request parameter contain or not
@@ -807,9 +800,9 @@ export class UserServices {
       return "fail";
     }
   }
-  public checkgettypeuserrequest(req: Request) {
+  public checkgettypeuserrequest(req: AppUserByType) {
     // check request parameter contain or not
-    if (req.body.age && req.body.active && req.body.gender == undefined) {
+    if (req.age && req.active && req.gender == undefined) {
       return "fail";
     }
   }
