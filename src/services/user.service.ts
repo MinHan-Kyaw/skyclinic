@@ -1,7 +1,7 @@
 import { Request } from "express";
 import mongoose from "mongoose";
 import AesEncryption from "../common/aesEncryption";
-import { ISKCUser, RSKCUser } from "../models/skcuser.model";
+import { ISKCUser, IUserUpdate, RSKCUser } from "../models/skcuser.model";
 import ISKCUserClass from "../models/skcuser.model";
 // import AppUserClass from "../models/appuser.model";
 import AppUserClass, { AppReqUser,AppSignInUser,AppUserDetail,AppUserByType } from "../models/appuser.model";
@@ -33,7 +33,8 @@ export class UserServices {
 
   // update user
   public async updateskcuser(
-    req: Request
+    req: IUserUpdate,
+    files: any
   ): Promise<{ status: string; data: any }> {
     var data: any;
     var status: any;
@@ -46,9 +47,8 @@ export class UserServices {
         status = "insufficient";
         return { status, data };
       }
-      const { userid } = req.body;
+      const { userid } = req;
       // const token = getTokenFromHeader(req);
-      console.log("here");
 
       // check request token exist or not
       // if (token) {
@@ -57,7 +57,7 @@ export class UserServices {
       const _userid = AesEncryption.encrypt(userid);
       //   // check request token valid or not
       //   if (doc["_userid"] == _userid) {
-      var files: any = req.files;
+      var files: any = files;
       const profileimage = files?.find(
         (x: any) => x.fieldname == "profileimage"
       );
@@ -149,14 +149,14 @@ export class UserServices {
           });
 
           const today = new Date();
-          var year = req.body.dob[0];
+          var year = parseInt(req.dob.toString().split('-')[0]);
           // let year = d.getFullYear();
           var age = today.getFullYear() - year;
           const skcuser_params: ISKCUser = {
             skcuserid: checkexist.skcuserid,
             appuserid: checkexist.appuserid,
-            address: AesEncryption.encrypt(req.body.address),
-            gender: AesEncryption.encrypt(req.body.gender),
+            address: AesEncryption.encrypt(req.address),
+            gender: AesEncryption.encrypt(req.gender),
             usertype: checkexist.usertype,
             identifiedphoto_front: AesEncryption.encrypt(
               identifiedphotofrontname
@@ -164,14 +164,14 @@ export class UserServices {
             identifiedphoto_back: AesEncryption.encrypt(
               identifiedphotobackname
             ),
-            identifiednumber: AesEncryption.encrypt(req.body.identifiednumber),
-            fullname: AesEncryption.encrypt(req.body.fullname),
-            othername: AesEncryption.encrypt(req.body.othername),
-            email: AesEncryption.encrypt(req.body.email),
-            dob: req.body.dob,
-            bloodtype: AesEncryption.encrypt(req.body.bloodtype),
-            allergicdrug: AesEncryption.encrypt(req.body.allergicdrug),
-            cmt: AesEncryption.encrypt(req.body.cmt),
+            identifiednumber: AesEncryption.encrypt(req.identifiednumber),
+            fullname: AesEncryption.encrypt(req.fullname),
+            othername: AesEncryption.encrypt(req.othername),
+            email: AesEncryption.encrypt(req.email),
+            dob: req.dob,
+            bloodtype: AesEncryption.encrypt(req.bloodtype),
+            allergicdrug: AesEncryption.encrypt(req.allergicdrug),
+            cmt: AesEncryption.encrypt(req.cmt),
             profileimage: AesEncryption.encrypt(profileimagename),
             created_date: checkexist.created_date,
             modified_date: new Date(),
@@ -219,7 +219,8 @@ export class UserServices {
 
   // update profile
   public async updateprofile(
-    req: Request
+    req: IUserUpdate,
+    files: any,
   ): Promise<{ status: string; data: any }> {
     var data: any;
     var status: any;
@@ -232,11 +233,11 @@ export class UserServices {
         status = "insufficient";
         return { status, data };
       }
-      const { userid } = req.body;
+      const { userid } = req;
 
       const _userid = AesEncryption.encrypt(userid);
 
-      var files: any = req.files;
+      var files: any = files;
       const profileimage = files?.find(
         (x: any) => x.fieldname == "profileimage"
       );
@@ -303,7 +304,6 @@ export class UserServices {
 
           //Identified front image upload
           if (identifiedphoto_front != undefined) {
-            console.log("identifiedphotos/" + oldskcuser.identifiedphoto_front);
             minioClient.removeObject('skcbucket', "identifiedphotos/" + oldskcuser.identifiedphoto_front, function(err) {
               if (err) {
                 return console.log('Unable to remove object', err)
@@ -354,14 +354,14 @@ export class UserServices {
           }
 
           const today = new Date();
-          var year = req.body.dob[0];
+          var year = parseInt(req.dob.toString().split('-')[0]);
           // let year = d.getFullYear();
           var age = today.getFullYear() - year;
           const skcuser_params: ISKCUser = {
             skcuserid: oldskcuser.skcuserid,
             appuserid: oldskcuser.appuserid,
-            address: AesEncryption.encrypt(req.body.address),
-            gender: AesEncryption.encrypt(req.body.gender),
+            address: AesEncryption.encrypt(req.address),
+            gender: AesEncryption.encrypt(req.gender),
             usertype: oldskcuser.usertype,
             identifiedphoto_front: AesEncryption.encrypt(
               identifiedphotofrontname
@@ -369,14 +369,14 @@ export class UserServices {
             identifiedphoto_back: AesEncryption.encrypt(
               identifiedphotobackname
             ),
-            identifiednumber: AesEncryption.encrypt(req.body.identifiednumber),
-            fullname: AesEncryption.encrypt(req.body.fullname),
-            othername: AesEncryption.encrypt(req.body.othername),
-            email: AesEncryption.encrypt(req.body.email),
-            dob: req.body.dob,
-            bloodtype: AesEncryption.encrypt(req.body.bloodtype),
-            allergicdrug: AesEncryption.encrypt(req.body.allergicdrug),
-            cmt: AesEncryption.encrypt(req.body.cmt),
+            identifiednumber: AesEncryption.encrypt(req.identifiednumber),
+            fullname: AesEncryption.encrypt(req.fullname),
+            othername: AesEncryption.encrypt(req.othername),
+            email: AesEncryption.encrypt(req.email),
+            dob: req.dob,
+            bloodtype: AesEncryption.encrypt(req.bloodtype),
+            allergicdrug: AesEncryption.encrypt(req.allergicdrug),
+            cmt: AesEncryption.encrypt(req.cmt),
             profileimage: AesEncryption.encrypt(profileimagename),
             created_date: oldskcuser.created_date,
             modified_date: new Date(),
@@ -404,7 +404,7 @@ export class UserServices {
             fullname: AesEncryption.decrypt(result.fullname),
             othername: AesEncryption.decrypt(result.othername),
             email: AesEncryption.decrypt(result.email),
-            dob: req.body.dob,
+            dob: req.dob,
             bloodtype: AesEncryption.decrypt(result.bloodtype),
             allergicdrug: AesEncryption.decrypt(result.allergicdrug),
             cmt: AesEncryption.decrypt(result.cmt),
@@ -444,12 +444,10 @@ export class UserServices {
     var data: any;
     var status: any;
     var list: any = [];
-    // console.log("herere");
     try {
       // check request parameter contain or not
       const { age,active,gender } = req;
       const check = this.checkgettypeuserrequest(req);
-      // console.log("herer");
       if (check == "fail") {
         data = {};
         status = "insufficient";
@@ -487,7 +485,7 @@ export class UserServices {
           is_active: req.active,
         });
       }
-      console.log(skcuserlist);
+
       const appuserlist = await this.appusers.find({});
       status = "success";
       // check data empty
@@ -763,39 +761,38 @@ export class UserServices {
     }
   }
 
-  public checkskcuserrequest(req: Request) {
+  public checkskcuserrequest(req: IUserUpdate) {
     // check request parameter contain or not
     if (
-      (req.body.userid &&
-        req.body.username &&
-        req.body.address &&
-        req.body.gender &&
-        req.body.fullname &&
-        req.body.othername &&
-        req.body.email &&
-        req.body.dob &&
-        req.body.bloodtype &&
-        req.body.allergicdrug &&
-        req.body.cmt) == undefined ||
-      req.files?.length != 3
+      (req.userid &&
+        // req.username &&
+        req.address &&
+        req.gender &&
+        req.fullname &&
+        req.othername &&
+        req.email &&
+        req.dob &&
+        req.bloodtype &&
+        req.allergicdrug &&
+        req.cmt) == undefined
     ) {
       return "fail";
     }
   }
 
-  public checkupdateprofilerequest(req: Request) {
+  public checkupdateprofilerequest(req: IUserUpdate) {
     // check request parameter contain or not
     if (
-      (req.body.userid &&
-        req.body.address &&
-        req.body.gender &&
-        req.body.fullname &&
-        req.body.othername &&
-        req.body.email &&
-        req.body.dob &&
-        req.body.bloodtype &&
-        req.body.allergicdrug &&
-        req.body.cmt) == undefined
+      (req.userid &&
+        req.address &&
+        req.gender &&
+        req.fullname &&
+        req.othername &&
+        req.email &&
+        req.dob &&
+        req.bloodtype &&
+        req.allergicdrug &&
+        req.cmt) == undefined
     ) {
       return "fail";
     }

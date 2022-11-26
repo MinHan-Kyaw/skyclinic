@@ -67,7 +67,6 @@ export class RegistrationServices {
         filter == null ||
         (filter.username != _username && filter.phone != _phone)
       ) {
-        console.log('here');
         var appuserid = uuidv4();
         // collect request parameter for appuser
         const app_user: AppIUser = {
@@ -361,7 +360,6 @@ export class RegistrationServices {
   }
 
   public sendemail(mailOptions: any) {
-    // console.log(mailOptions)
     transporter.sendMail(mailOptions, (err: any) => {
       if (err) {
         console.log(err);

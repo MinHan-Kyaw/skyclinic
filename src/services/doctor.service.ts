@@ -11,7 +11,7 @@ import generateFilename from "../common/generateFilename";
 import minioClient from "../common/minio";
 import * as fs from "fs"; //for unlink(delete) old image in folder
 import checkFileType from "../common/checkFileType";
-import IdoctorClass, { Idoctor } from "../models/doctor.model";
+import IdoctorClass, { Idoctor, IDoctorInput } from "../models/doctor.model";
 import { v4 as uuidv4 } from "uuid";
 
 const jwt = require("jsonwebtoken");
@@ -29,7 +29,8 @@ export class DoctorServices {
 
   // setup doctor
   public async setupdoctor(
-    req: Request
+    req: IDoctorInput,
+    files: any,
   ): Promise<{ status: string; data: any }> {
     var status: any;
     var data: any;
@@ -43,7 +44,7 @@ export class DoctorServices {
         return { status, data };
       }
 
-      const { userid } = req.body;
+      const { userid } = req;
       const _userid = AesEncryption.encrypt(userid);
       //check user exit or not
       const filter_userid = {
@@ -61,7 +62,7 @@ export class DoctorServices {
           return { data, status };
         }
 
-        var files: any = req.files;
+        var files: any = files;
         console.log(req);
         const smphoto = files?.find((x: any) => x.fieldname == "smphoto");
         const grecord = files?.find((x: any) => x.fieldname == "grecord");
@@ -121,16 +122,16 @@ export class DoctorServices {
         const doctor_data: Idoctor = {
           appuserid: appuserid,
           doctorid: doctorid,
-          doctorname: AesEncryption.encrypt(req.body.doctorname),
-          smno: AesEncryption.encrypt(req.body.smno),
-          expdate: req.body.expdate,
+          doctorname: AesEncryption.encrypt(req.doctorname),
+          smno: AesEncryption.encrypt(req.smno),
+          expdate: req.expdate,
           smphoto: AesEncryption.encrypt(smphotoname),
-          degreename: AesEncryption.encrypt(req.body.degreename),
-          guni: AesEncryption.encrypt(req.body.guni),
-          gyear: AesEncryption.encrypt(req.body.gyear),
+          degreename: AesEncryption.encrypt(req.degreename),
+          guni: AesEncryption.encrypt(req.guni),
+          gyear: AesEncryption.encrypt(req.gyear),
           grecord: AesEncryption.encrypt(grecordname),
           degrees: [],
-          phone: AesEncryption.encrypt(req.body.phone),
+          phone: AesEncryption.encrypt(req.phone),
           specializedarea: [],
           created_date: new Date(Date.now()),
           modified_date: new Date(),
@@ -157,18 +158,18 @@ export class DoctorServices {
     }
   }
 
-  public checksetupdoctorrequest(req: Request) {
+  public checksetupdoctorrequest(req: IDoctorInput) {
     // check request parameter contain or not
     if (
-      (req.body.userid &&
-        req.body.doctorname &&
-        req.body.smno &&
-        req.body.expdate &&
-        req.body.degreename &&
-        req.body.guni &&
-        req.body.gyear &&
-        req.body.phone &&
-        req.body.specializedarea) == undefined
+      (req.userid &&
+        req.doctorname &&
+        req.smno &&
+        req.expdate &&
+        req.degreename &&
+        req.guni &&
+        req.gyear &&
+        req.phone &&
+        req.specializedarea) == undefined
     ) {
       return "fail";
     }

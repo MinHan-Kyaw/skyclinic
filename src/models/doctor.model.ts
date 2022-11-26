@@ -8,7 +8,7 @@ export interface Idoctor extends BaseModel {
     doctorname: String, // title to declare to patient
     smno: String, // sama number
     expdate: Date,
-    smphoto: String,
+    smphoto: String, // Sama photo
     degreename: String, // first degree name
     guni: String, // first degree's graduated uni
     gyear: String, // first degree's graduated year
@@ -23,6 +23,18 @@ export interface IDegree{
     guni: String, // first degree's graduated uni
     gyear: String, // first degree's graduated year
     grecord: String,
+}
+
+export interface IDoctorInput{
+    userid: String,
+    doctorname: String, // title to declare to patient
+    smno: String, // sama number
+    expdate: Date,
+    degreename: String, // first degree name
+    guni: String, // first degree's graduated uni
+    gyear: String, // first degree's graduated year
+    phone: String,
+    specializedarea: [],
 }
 
 @singleton()

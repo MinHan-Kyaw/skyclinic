@@ -15,6 +15,7 @@ import Roles from "../common/roles";
 import multer = require("multer");
 import { DoctorServices } from "../services/doctor.service";
 import formidableMiddleware from 'express-formidable';
+import { IDoctorInput } from "../models/doctor.model";
 
 @autoInjectable()
 export default class Routes {
@@ -36,7 +37,7 @@ export default class Routes {
           { session: false },
           async (err, user, info) => {
             if (user) {
-              const data = await this.doctor_service.setupdoctor(req);
+              const data = await this.doctor_service.setupdoctor(req.body as IDoctorInput, req.files);
               if (data.status == "success") {
                 successresponse("Created doctor successfully.", data.data, res);
               } else if (data.status == "insufficient") {

@@ -14,6 +14,7 @@ import { authorize } from "../middlewares/authorize";
 import Roles from "../common/roles";
 import multer = require("multer");
 import { AppReqUser, AppSignInUser, AppUserDetail, AppUserOTP, AppUserByType } from "../models/appuser.model";
+import { IUserUpdate } from "../models/skcuser.model";
 
 @autoInjectable()
 export default class Routes {
@@ -118,7 +119,7 @@ export default class Routes {
       async (req: Request, res: Response) => {
         passport.authenticate("jwt", { session: false }, async (err, user, info) => {
           if(user){
-            const data = await this.user_service.updateskcuser(req);
+            const data = await this.user_service.updateskcuser(req.body as IUserUpdate, req.files);
             if (data.status == "success") {
               successresponse("Updated user successfully.", data.data, res);
             } else if (data.status == "insufficient") {
@@ -147,7 +148,7 @@ export default class Routes {
       async (req: Request, res: Response) => {
         passport.authenticate("jwt", { session: false }, async (err, user, info) => {
           if(user){
-            const data = await this.user_service.updateprofile(req);
+            const data = await this.user_service.updateprofile(req.body as IUserUpdate, req.files);
             if (data.status == "success") {
               successresponse("Updated user successfully.", data.data, res);
             } else if (data.status == "insufficient") {

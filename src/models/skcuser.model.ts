@@ -43,6 +43,20 @@ export interface RSKCUser {
   age: Number
 }
 
+export interface IUserUpdate {
+  userid: String,
+  fullname: String,
+  othername: String,
+  email: String,
+  address: String,
+  dob: Date,
+  gender: String,
+  bloodtype: String,
+  allergicdrug: String,
+  cmt: String, //current medical treatment
+  identifiednumber: String,
+}
+
 @singleton()
 export default class ISKCUserClass {
   Schema = mongoose.Schema;

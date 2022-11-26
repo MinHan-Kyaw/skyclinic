@@ -17,7 +17,7 @@ const { secretKey, algorithms } = environment.getJWTConfig();
 const appuserclass = new AppUserClass();
 const skcuser = new ISKCUserClass();
 const user_service = new UserServices(skcuser, appuserclass);
-// const registration_servie = new RegistrationServices(skcuser, appuserclass);
+const registration_servie = new RegistrationServices(skcuser, appuserclass);
 
 beforeAll(async () => {
   const mongoServer = await MongoMemoryServer.create();
@@ -31,11 +31,19 @@ afterAll(async () => {
 
 describe("Get User Detail", () => {
 
+  it("should create user successfully", async () => {
+    const userBody = userData.correctdata;
+    const response = await registration_servie.signup(userBody as AppReqUser);
+    expect(response).toHaveProperty(["status"]);
+    expect(response).toHaveProperty(["data", "token"]);
+    expect(response.status).toBe("success");
+  });
+
   it("should return user detail successfully", async () => {
     const userBody = userData;
     const response = await user_service.getdetail(userBody as AppUserDetail);
     expect(response).toHaveProperty(["status"]);
-    expect(response).toHaveProperty(["data", "token"]);
+    expect(response).toHaveProperty(["data"]);
     expect(response.status).toBe("success");
   });
 });
@@ -46,7 +54,7 @@ describe("Get All User", () => {
     //   const userBody = userData;
       const response = await user_service.getall();
       expect(response).toHaveProperty(["status"]);
-      expect(response).toHaveProperty(["data", "token"]);
+      expect(response).toHaveProperty(["data"]);
       expect(response.status).toBe("success");
     });
   });
@@ -58,7 +66,7 @@ describe("Get User By Type", () => {
       const userBody = userData.userbytypedata;
       const response = await user_service.getbytype(userBody as AppUserByType);
       expect(response).toHaveProperty(["status"]);
-      expect(response).toHaveProperty(["data", "token"]);
+      expect(response).toHaveProperty(["data"]);
       expect(response.status).toBe("success");
     });
   });
