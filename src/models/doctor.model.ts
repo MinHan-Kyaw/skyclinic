@@ -9,10 +9,6 @@ export interface Idoctor extends BaseModel {
     smno: String, // sama number
     expdate: Date,
     smphoto: String, // Sama photo
-    degreename: String, // first degree name
-    guni: String, // first degree's graduated uni
-    gyear: String, // first degree's graduated year
-    grecord: String, //first degree's upload graduated record - photo
     degrees: IDegree[], // Secondary Degrees - Degree Object Array
     phone: String,
     specializedarea: [], 
@@ -22,7 +18,7 @@ export interface IDegree{
     degreename: String, // first degree name
     guni: String, // first degree's graduated uni
     gyear: String, // first degree's graduated year
-    grecord: String,
+    grecord: String,//first degree's upload graduated record - photo
 }
 
 export interface IDoctorInput{
