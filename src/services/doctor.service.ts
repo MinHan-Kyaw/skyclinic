@@ -13,6 +13,7 @@ import * as fs from "fs"; //for unlink(delete) old image in folder
 import checkFileType from "../common/checkFileType";
 import IdoctorClass, { Idoctor, IDoctorInput } from "../models/doctor.model";
 import { v4 as uuidv4 } from "uuid";
+import { fileupload, getfileurl } from "../common/fileupload";
 
 const jwt = require("jsonwebtoken");
 
@@ -84,37 +85,19 @@ export class DoctorServices {
         }
 
         const smphotoname = generateFilename(smphoto.originalname);
-        const await_smphoto = await minioClient.fPutObject(
-          "skcbucket",
+        const await_profile = await fileupload(
           "smphoto/" + smphotoname,
           smphoto["path"],
-          { "Content-Type": "application/octet-stream" }
         );
-
-      
-        /* Deleting the file from the uploads folder. */
-        fs.unlink(smphoto["path"], (err) => {
-          if (err) {
-            throw err;
-          }
-        })
 
         const grecordname = grecord
           ? generateFilename(grecord.originalname)
           : "";
         if (grecord != undefined) {
-          const await_grecord = await minioClient.fPutObject(
-            "skcbucket",
+          const await_grecord = await fileupload(
             "grecord/" + grecordname,
             grecord["path"],
-            { "Content-Type": "application/octet-stream" }
           );
-          /* Deleting the file from the uploads folder. */
-          fs.unlink(grecord["path"], (err) => {
-            if (err) {
-              throw err;
-            }
-          })
         }
 
         const doctorid = uuidv4();
