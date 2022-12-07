@@ -4,23 +4,24 @@ import AesEncryption from "../common/aesEncryption";
 import { ISKCUser, IUserUpdate, RSKCUser } from "../models/skcuser.model";
 import ISKCUserClass from "../models/skcuser.model";
 // import AppUserClass from "../models/appuser.model";
-import AppUserClass, { AppReqUser,AppSignInUser,AppUserDetail,AppUserByType } from "../models/appuser.model";
+import AppUserClass, {
+  AppReqUser,
+  AppSignInUser,
+  AppUserDetail,
+  AppUserByType,
+} from "../models/appuser.model";
 import { injectable } from "tsyringe";
 import environment from "../../environment";
-import getTokenFromHeader from "../common/headerToken";
 import generateFilename from "../common/generateFilename";
 import minioClient from "../common/minio";
-import * as fs from "fs"; //for unlink(delete) old image in folder
 import checkFileType from "../common/checkFileType";
-import Genders from "../common/gender";
+import { fileupload, getfileurl } from "../common/fileupload";
+
+const bucketname = "awyc-lonely";
 
 const jwt = require("jsonwebtoken");
 
 const { secretKey, algorithms } = environment.getJWTConfig();
-
-const bucket_url = "http://192.168.1.17:9000/skcbucket/";
-const identifiedphoto_url = bucket_url + "identifiedphotos/";
-const profile_url = bucket_url + "profiles/";
 
 @injectable()
 export class UserServices {
@@ -99,57 +100,32 @@ export class UserServices {
         if (checkexist) {
           //profile image upload
           const profileimagename = generateFilename(profileimage.originalname);
-          const await_profile = await minioClient.fPutObject(
-            "skcbucket",
+          const await_profile = await fileupload(
             "profiles/" + profileimagename,
-
-            profileimage["path"],
-            { "Content-Type": "application/octet-stream" }
+            profileimage["path"]
           );
-          fs.unlink(profileimage["path"], (err) => {
-            if (err) {
-              throw err;
-            }
-          });
 
           //Identified front image upload
 
           const identifiedphotofrontname = generateFilename(
             identifiedphoto_front.originalname
           );
-          const await_identifiedphoto_front = await minioClient.fPutObject(
-            "skcbucket",
+          const await_identifiedphoto_front = await fileupload(
             "identifiedphotos/" + identifiedphotofrontname,
-            identifiedphoto_front["path"],
-            { "Content-Type": "application/octet-stream" }
+            identifiedphoto_front["path"]
           );
-
-          // remove temporary folder for images
-          fs.unlink(identifiedphoto_front["path"], (err) => {
-            if (err) {
-              throw err;
-            }
-          });
 
           //Identified back image upload
           const identifiedphotobackname = generateFilename(
             identifiedphoto_back.originalname
           );
-          const await_identifiedphoto_back = await minioClient.fPutObject(
-            "skcbucket",
+          const await_identifiedphoto_back = await fileupload(
             "identifiedphotos/" + identifiedphotobackname,
-            identifiedphoto_back["path"],
-            { "Content-Type": "application/octet-stream" }
+            identifiedphoto_back["path"]
           );
 
-          fs.unlink(identifiedphoto_back["path"], (err) => {
-            if (err) {
-              throw err;
-            }
-          });
-
           const today = new Date();
-          var year = parseInt(req.dob.toString().split('-')[0]);
+          var year = parseInt(req.dob.toString().split("-")[0]);
           // let year = d.getFullYear();
           var age = today.getFullYear() - year;
           const skcuser_params: ISKCUser = {
@@ -220,7 +196,7 @@ export class UserServices {
   // update profile
   public async updateprofile(
     req: IUserUpdate,
-    files: any,
+    files: any
   ): Promise<{ status: string; data: any }> {
     var data: any;
     var status: any;
@@ -280,81 +256,40 @@ export class UserServices {
           );
           //profile image upload
           if (profileimage != undefined) {
-            
-            minioClient.removeObject('skcbucket', "profiles/" + oldskcuser.profileimage, function(err) {
-              if (err) {
-                return console.log('Unable to remove object', err)
-              }
-              console.log('Removed profile')
-            })
             profileimagename = generateFilename(profileimage.originalname);
-            const await_profile = await minioClient.fPutObject(
-              "skcbucket",
+            const await_profile = await fileupload(
               "profiles/" + profileimagename,
-
               profileimage["path"],
-              { "Content-Type": "application/octet-stream" }
+              "profiles/" + oldskcuser.profileimage
             );
-            fs.unlink(profileimage["path"], (err) => {
-              if (err) {
-                throw err;
-              }
-            });
           }
 
           //Identified front image upload
           if (identifiedphoto_front != undefined) {
-            minioClient.removeObject('skcbucket', "identifiedphotos/" + oldskcuser.identifiedphoto_front, function(err) {
-              if (err) {
-                return console.log('Unable to remove object', err)
-              }
-              console.log('Removed Identified Photo Front.')
-            })
             identifiedphotofrontname = generateFilename(
               identifiedphoto_front.originalname
             );
-            const await_identifiedphoto_front = await minioClient.fPutObject(
-              "skcbucket",
+            const await_identifiedphoto_front = await fileupload(
               "identifiedphotos/" + identifiedphotofrontname,
               identifiedphoto_front["path"],
-              { "Content-Type": "application/octet-stream" }
+              "identifiedphotos/" + oldskcuser.identifiedphoto_front
             );
-
-            // remove temporary folder for images
-            fs.unlink(identifiedphoto_front["path"], (err) => {
-              if (err) {
-                throw err;
-              }
-            });
           }
 
           if (identifiedphoto_back != undefined) {
-            minioClient.removeObject('skcbucket', "identifiedphotos/" + oldskcuser.identifiedphoto_back, function(err) {
-              if (err) {
-                return console.log('Unable to remove object', err)
-              }
-              console.log('Removed Identified Photo Back.')
-            })
             //Identified back image upload
             identifiedphotobackname = generateFilename(
               identifiedphoto_back.originalname
             );
-            const await_identifiedphoto_back = await minioClient.fPutObject(
-              "skcbucket",
+            const await_identifiedphoto_back = await fileupload(
               "identifiedphotos/" + identifiedphotobackname,
               identifiedphoto_back["path"],
-              { "Content-Type": "application/octet-stream" }
+              "identifiedphotos/" + oldskcuser.identifiedphoto_back
             );
-
-            fs.unlink(identifiedphoto_back["path"], (err) => {
-              if (err) {
-                throw err;
-              }
-            });
           }
 
           const today = new Date();
-          var year = parseInt(req.dob.toString().split('-')[0]);
+          var year = parseInt(req.dob.toString().split("-")[0]);
           // let year = d.getFullYear();
           var age = today.getFullYear() - year;
           const skcuser_params: ISKCUser = {
@@ -394,12 +329,14 @@ export class UserServices {
           data = {
             address: AesEncryption.decrypt(result.address),
             gender: AesEncryption.decrypt(result.gender),
-            identifiedphoto_front:
-              identifiedphoto_url +
+            identifiedphoto_front: getfileurl(
               AesEncryption.decrypt(result.identifiedphoto_front),
-            identifiedphoto_back:
-              identifiedphoto_url +
+              "identifiedphotos"
+            ),
+            identifiedphoto_back: getfileurl(
               AesEncryption.decrypt(result.identifiedphoto_back),
+              "identifiedphotos"
+            ),
             identifiednumber: AesEncryption.decrypt(result.identifiednumber),
             fullname: AesEncryption.decrypt(result.fullname),
             othername: AesEncryption.decrypt(result.othername),
@@ -408,8 +345,10 @@ export class UserServices {
             bloodtype: AesEncryption.decrypt(result.bloodtype),
             allergicdrug: AesEncryption.decrypt(result.allergicdrug),
             cmt: AesEncryption.decrypt(result.cmt),
-            profileimage:
-              profile_url + AesEncryption.decrypt(result.profileimage),
+            profileimage: getfileurl(
+              AesEncryption.decrypt(result.profileimage),
+              "profiles"
+            ),
           };
           status = "success";
           return { status, data };
@@ -440,13 +379,15 @@ export class UserServices {
     }
   }
   //get all user by type (age, active/inactive)
-  public async getbytype(req: AppUserByType): Promise<{ status: string; data: any }> {
+  public async getbytype(
+    req: AppUserByType
+  ): Promise<{ status: string; data: any }> {
     var data: any;
     var status: any;
     var list: any = [];
     try {
       // check request parameter contain or not
-      const { age,active,gender } = req;
+      const { age, active, gender } = req;
       const check = this.checkgettypeuserrequest(req);
       if (check == "fail") {
         data = {};
@@ -591,7 +532,9 @@ export class UserServices {
     }
   }
   // Get User Detail
-  public async getdetail(req: AppUserDetail): Promise<{ status: string; data: any }> {
+  public async getdetail(
+    req: AppUserDetail
+  ): Promise<{ status: string; data: any }> {
     var data: any;
     var status: any;
     var list: any = [];
@@ -637,14 +580,18 @@ export class UserServices {
             cmt: AesEncryption.decrypt(skcuser.cmt),
             usertype: AesEncryption.decrypt(skcuser.usertype),
             identifiednumber: AesEncryption.decrypt(skcuser.identifiednumber),
-            identifiedphoto_front:
-              identifiedphoto_url +
+            identifiedphoto_front: getfileurl(
               AesEncryption.decrypt(skcuser.identifiedphoto_front),
-            identifiedphoto_back:
-              identifiedphoto_url +
+              "identifiedphotos"
+            ),
+            identifiedphoto_back: getfileurl(
               AesEncryption.decrypt(skcuser.identifiedphoto_back),
-            profileimage:
-              profile_url + AesEncryption.decrypt(skcuser.profileimage),
+              "identifiedphotos"
+            ),
+            profileimage: getfileurl(
+              AesEncryption.decrypt(skcuser.profileimage),
+              "profiles"
+            ),
             age: skcuser.age,
           };
           data = result;
