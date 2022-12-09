@@ -11,7 +11,7 @@ export interface Idoctor extends BaseModel {
     smphoto: String, // Sama photo
     degrees: IDegree[], // Secondary Degrees - Degree Object Array
     phone: String,
-    specializedarea: [], 
+    specializedarea: String, 
 }
 
 export interface IDegree{
@@ -30,7 +30,7 @@ export interface IDoctorInput{
     guni: String, // first degree's graduated uni
     gyear: String, // first degree's graduated year
     phone: String,
-    specializedarea: [],
+    specializedarea: String,
 }
 
 @singleton()
@@ -48,9 +48,9 @@ export default class IdoctorClass {
         guni: String, // graduated uni
         gyear: String, // graduated year
         grecord: String, //upload graduated record
-        degree: [],
+        degrees: [Object],
         phone: String,
-        specializedarea: [],
+        specializedarea: String,
         ...BaseModel
     });
     model = mongoose.models.doctor || mongoose.model("doctor", this.doctorschema);

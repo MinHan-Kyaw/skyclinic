@@ -116,7 +116,7 @@ export class DoctorServices {
             grecord: AesEncryption.encrypt(grecordname),
           }],
           phone: AesEncryption.encrypt(req.phone),
-          specializedarea: [],
+          specializedarea: AesEncryption.encrypt(req.specializedarea),
           created_date: new Date(Date.now()),
           modified_date: new Date(),
           created_user: _userid,

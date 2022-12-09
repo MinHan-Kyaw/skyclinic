@@ -106,7 +106,6 @@ export class UserServices {
           );
 
           //Identified front image upload
-
           const identifiedphotofrontname = generateFilename(
             identifiedphoto_front.originalname
           );

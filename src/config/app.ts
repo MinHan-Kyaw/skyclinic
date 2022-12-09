@@ -17,10 +17,10 @@ class App {
   public app: express.Application;
   public mongoURL: string =
     // for local
-    "mongodb://localhost:27017/" + environment.getDBName();
+    // "mongodb://localhost:27017/" + environment.getDBName();
     // "mongodb://mongo_db:27017/" + process.env.DB_NAME;
     // "mongodb://mongo_db:27017/" + environment.getDBName();
-    // "mongodb://skdbforfirstapp:TrllRnQhZbyDVDz6rzBGiy0hfwx8t1vE8QEPw8zuyriv7JxgsGSBYcx2FID6ZLWCRVu5sphNcn15U4haqLOskQ==@skdbforfirstapp.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@skdbforfirstapp@";
+    "mongodb://skdbforfirstapp:TrllRnQhZbyDVDz6rzBGiy0hfwx8t1vE8QEPw8zuyriv7JxgsGSBYcx2FID6ZLWCRVu5sphNcn15U4haqLOskQ==@skdbforfirstapp.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@skdbforfirstapp@";
   private user_controller = container.resolve(user_route);
   private doctor_controller = container.resolve(doctor_route);
   // private routes: Routes = new Routes();
