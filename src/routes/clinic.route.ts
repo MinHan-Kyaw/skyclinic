@@ -1,0 +1,62 @@
+import { Application, NextFunction, Request, Response } from "express";
+import { autoInjectable } from "tsyringe";
+// import { UserServices } from "../services/user.service";
+// import { RegistrationServices } from "../services/registration.service";
+import {
+  successresponse,
+  failureresponse,
+  insufficientparameters,
+} from "../services/common.service";
+import fs = require("fs");
+import swaggerUi from "swagger-ui-express";
+import passport from "passport";
+import { authorize } from "../middlewares/authorize";
+import Roles from "../common/roles";
+import multer = require("multer");
+import { ClinicServices } from "../services/clinic.service";
+import formidableMiddleware from 'express-formidable';
+
+@autoInjectable()
+export default class Routes {
+  clinic_service: ClinicServices;
+  constructor(
+    clinic_service: ClinicServices,
+  ) {
+    this.clinic_service = clinic_service;
+  }
+
+  public route(app: Application) {
+    //create clinic route
+    app.post(
+      "/clinic/setup",
+      multer({ dest: "./uploads/" }).any(),
+      async (req: Request, res: Response) => {
+        passport.authenticate(
+          "jwt",
+          { session: false },
+          async (err, clinic, info) => {
+            if (clinic) {
+              const data = await this.clinic_service.setupclinic(req);
+              if (data.status == "success") {
+                successresponse("Created clinic successfully.", data.data, res);
+              } else if (data.status == "insufficient") {
+                insufficientparameters(res);
+              } else if (data.status == "unauthorized") {
+                failureresponse("Unauthorized.", data.data, res);
+              } else if (data.status == "invalid") {
+                failureresponse("User not found.", data.data, res);
+              } else if (data.status == "invalidimg") {
+                failureresponse("Not allowed file type.", data.data, res);
+              } else {
+                failureresponse("Error.", data.data, res);
+              }
+            } else {
+              failureresponse("Unauthorized.", {}, res);
+            }
+          }
+        )(req, res);
+      }
+    );
+    //create get all users route
+  }
+}

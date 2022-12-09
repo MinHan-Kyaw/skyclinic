@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { BaseModel } from './common.model';
 
 export interface Clinic extends BaseModel{
-    clinicid: Number,
+    clinicid: String,
     clinicname: String,
     owner: [], // appuserid
     address: String,

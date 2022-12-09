@@ -17,10 +17,11 @@ if (envFound.error) {
 class Environment {
   private environment: String;
   constructor(environment: String) {
-    this.environment = environment;
+    this.environment = Enviroments.prod_environment;
   }
 
   getPort(): Number {
+    console.log(this.environment)
     if (this.environment === Enviroments.dev_environment) {
       return 8081;
     } else if (this.environment === Enviroments.prod_environment) {
@@ -52,4 +53,6 @@ class Environment {
   }
 }
 
-export default new Environment(Enviroments.local_environment);
+// export default Environment;
+
+export default new Environment(Enviroments.prod_environment);
