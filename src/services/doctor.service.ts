@@ -122,7 +122,7 @@ export class DoctorServices {
           created_user: _userid,
           modified_user: "null",
           is_delete: false,
-          is_active: false,
+          is_active: true,
         };
         const doctor_value = new this.doctor(doctor_data);
         const doctor_result = await doctor_value.save();

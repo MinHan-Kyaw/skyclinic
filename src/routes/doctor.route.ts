@@ -27,7 +27,7 @@ export default class Routes {
   }
 
   public route(app: Application) {
-    //create user update route
+    //create doctor setup route
     app.post(
       "/doctor/setup",
       multer({ dest: "./uploads/" }).any(),

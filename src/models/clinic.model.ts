@@ -13,6 +13,16 @@ export interface Clinic extends BaseModel{
     clinicidentifiedphoto: String,
 }
 
+export interface ClinicInput{
+    userid: String,
+    clinicname: String,
+    owner: [], // appuserid
+    address: String,
+    phone: [], 
+    website: String,
+    clinicidentifiednumber: String,// clinic license or registration no
+}
+
 @singleton()
 export default class ClinicClass {
     Schema = mongoose.Schema;
@@ -20,9 +30,9 @@ export default class ClinicClass {
     clinicschema = new this.Schema({
         clinicid: Number,
         clinicname: String,
-        owner: [], // appuserid
+        owner: [Object], // appuserid
         address: String,
-        phone: [],
+        phone: [Object],
         website: String,
         clinicidentifiednumber: String, // clinic license or registration no
         clinicidentifiedphoto: String,

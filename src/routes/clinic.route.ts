@@ -10,11 +10,12 @@ import {
 import fs = require("fs");
 import swaggerUi from "swagger-ui-express";
 import passport from "passport";
-import { authorize } from "../middlewares/authorize";
+// import { authorize } from "../middlewares/authorize";
 import Roles from "../common/roles";
 import multer = require("multer");
 import { ClinicServices } from "../services/clinic.service";
 import formidableMiddleware from 'express-formidable';
+import { ClinicInput } from "../models/clinic.model";
 
 @autoInjectable()
 export default class Routes {
@@ -26,7 +27,7 @@ export default class Routes {
   }
 
   public route(app: Application) {
-    //create clinic route
+    //create clinic setup route
     app.post(
       "/clinic/setup",
       multer({ dest: "./uploads/" }).any(),
@@ -34,9 +35,9 @@ export default class Routes {
         passport.authenticate(
           "jwt",
           { session: false },
-          async (err, clinic, info) => {
-            if (clinic) {
-              const data = await this.clinic_service.setupclinic(req);
+          async (err, user, info) => {
+            if (user) {
+              const data = await this.clinic_service.setupclinic(req.body as ClinicInput, req.files);
               if (data.status == "success") {
                 successresponse("Created clinic successfully.", data.data, res);
               } else if (data.status == "insufficient") {
