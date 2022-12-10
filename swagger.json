@@ -1215,7 +1215,7 @@
                 }
             }
         },
-        "/clinic/create": {
+        "/clinic/setup": {
             "post": {
                 "tags": [
                     "Clinic"
@@ -1245,13 +1245,22 @@
                                 "clinicname": {
                                     "type": "string"
                                 },
+                                "owner": {
+                                    "type": "list"
+                                },
                                 "address": {
                                     "type": "string"
                                 },
                                 "phone": {
+                                    "type": "list"
+                                },
+                                "website": {
                                     "type": "string"
                                 },
-                                "remark": {
+                                "clinicidentifiednumber": {
+                                    "type": "string"
+                                },
+                                "clinicidentifiedphoto": {
                                     "type": "string"
                                 }
                             }
@@ -1271,62 +1280,7 @@
                                     "type": "string"
                                 },
                                 "data": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "_id": {
-                                                "type": "string"
-                                            },
-                                            "clinicid": {
-                                                "type": "number"
-                                            },
-                                            "clinicname": {
-                                                "type": "string"
-                                            },
-                                            "address": {
-                                                "type": "string"
-                                            },
-                                            "phone": {
-                                                "type": "string"
-                                            },
-                                            "remark": {
-                                                "type": "string"
-                                            },
-                                            "modification_notes": {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "created_date": {
-                                                            "type": "string"
-                                                        },
-                                                        "modified_date": {
-                                                            "type": "string"
-                                                        },
-                                                        "created_user": {
-                                                            "type": "string"
-                                                        },
-                                                        "modified_user": {
-                                                            "type": "string"
-                                                        },
-                                                        "is_delete": {
-                                                            "type": "boolean"
-                                                        },
-                                                        "is_active": {
-                                                            "type": "boolean"
-                                                        },
-                                                        "_id": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            },
-                                            "__v": {
-                                                "type": "number"
-                                            }
-                                        }
-                                    }
+                                    "type": "object"
                                 }
                             }
                         }
