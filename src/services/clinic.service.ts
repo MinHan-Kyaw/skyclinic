@@ -21,7 +21,7 @@ const { secretKey, algorithms } = environment.getJWTConfig();
 
 @injectable()
 export class ClinicServices {
-    clinic: mongoose.Model<any>;
+  clinic: mongoose.Model<any>;
   appusers: mongoose.Model<any>;
   constructor(clinic?: ClinicClass, appuser?: AppUserClass) {
     this.clinic = clinic!.model;
@@ -31,7 +31,7 @@ export class ClinicServices {
   // setup doctor
   public async setupclinic(
     req: ClinicInput,
-    files: any,
+    files: any
   ): Promise<{ status: string; data: any }> {
     var status: any;
     var data: any;
@@ -45,18 +45,22 @@ export class ClinicServices {
         return { status, data };
       }
 
-    //   const { userid } = req;
-    //   const _userid = AesEncryption.encrypt(userid);
-      //check user exit or not
-    //   const filter_userid = {
-    //     $or: [{ username: _userid }, { phone: _userid }],
-    //   };
-    //   var filter = await this.appusers.findOne(filter_userid);
-    //   if (filter != null && filter.appuserid) {
-        // const appuserid = filter.appuserid;
+      const { userid } = req;
+      const _userid = AesEncryption.encrypt(userid);
+      // check user exit or not
+      const filter_userid = {
+        $or: [{ username: _userid }, { phone: _userid }],
+      };
+      var filter = await this.appusers.findOne(filter_userid);
+      if (filter != null && filter.appuserid) {
+        const appuserid = filter.appuserid;
 
-        const filter_clinicidentifiednumber = { clinicidentifiednumber: req.clinicidentifiednumber };
-        const check_exist = await this.clinic.findOne(filter_clinicidentifiednumber);
+        const filter_clinicidentifiednumber = {
+          clinicidentifiednumber: req.clinicidentifiednumber,
+        };
+        const check_exist = await this.clinic.findOne(
+          filter_clinicidentifiednumber
+        );
         if (check_exist != null) {
           data = {};
           const status = "unauthorized";
@@ -65,41 +69,49 @@ export class ClinicServices {
 
         var files: any = files;
         console.log(req);
-        const clinicidentifiedphoto = files?.find((x: any) => x.fieldname == "clinicidentifiedphoto");
+        const clinicidentifiedphoto = files?.find(
+          (x: any) => x.fieldname == "clinicidentifiedphoto"
+        );
         // const grecord = files?.find((x: any) => x.fieldname == "grecord");
 
         if (clinicidentifiedphoto == undefined) {
-          console.log('here')
+          console.log("here");
           data = {};
           status = "insufficient";
           return { status, data };
         }
         // Check Image Type
-        if (
-          !checkFileType(clinicidentifiedphoto.mimetype)
-        ) {
+        if (!checkFileType(clinicidentifiedphoto.mimetype)) {
           data = {};
           status = "invalidimg";
           return { status, data };
         }
 
-        const clinicidentifiedphotoname = generateFilename(clinicidentifiedphoto.originalname);
+        const clinicidentifiedphotoname = generateFilename(
+          clinicidentifiedphoto.originalname
+        );
         const await_profile = await fileupload(
           "clinicidentifiedphoto/" + clinicidentifiedphotoname,
-          clinicidentifiedphoto["path"],
+          clinicidentifiedphoto["path"]
         );
 
         const clinicid = uuidv4();
         // collect request parameter for appuser
+        const phone_nos = req.phone.toString().split(',');
+        
         const clinic_data: Clinic = {
           clinicid: clinicid,
           clinicname: AesEncryption.encrypt(req.clinicname),
-          owner: req.owner,
+          owner: [appuserid],
           address: AesEncryption.encrypt(req.address),
-          phone: req.phone,
+          phone: phone_nos,
           website: AesEncryption.encrypt(req.website),
-          clinicidentifiednumber: AesEncryption.encrypt(req.clinicidentifiednumber), // 
-          clinicidentifiedphoto: AesEncryption.encrypt(clinicidentifiedphotoname),
+          clinicidentifiednumber: AesEncryption.encrypt(
+            req.clinicidentifiednumber
+          ), //
+          clinicidentifiedphoto: AesEncryption.encrypt(
+            clinicidentifiedphotoname
+          ),
           created_date: new Date(Date.now()),
           modified_date: new Date(),
           created_user: AesEncryption.encrypt(req.userid),
@@ -113,11 +125,11 @@ export class ClinicServices {
         data = clinic_result;
         status = "success";
         return { status, data };
-    //   } else {
-    //     data = {};
-    //     const status = "invalid";
-    //     return { data, status };
-    //   }
+      } else {
+        data = {};
+        const status = "invalid";
+        return { data, status };
+      }
     } catch (e) {
       data = e;
       status = "fail";
@@ -130,7 +142,6 @@ export class ClinicServices {
     if (
       (req.userid &&
         req.clinicname &&
-        req.owner &&
         req.address &&
         req.phone &&
         req.website &&

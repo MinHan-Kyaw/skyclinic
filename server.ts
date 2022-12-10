@@ -10,6 +10,6 @@ const PORT = environment.getPort();
 
 // const PORT = process.env.PORT;
 
-app.listen(PORT, () => {
+app.listen(PORT, '192.168.1.20', () => {
     console.log(`Server is running on PORT ${PORT}`);
 });

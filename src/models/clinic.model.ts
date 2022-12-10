@@ -5,9 +5,9 @@ import { BaseModel } from './common.model';
 export interface Clinic extends BaseModel{
     clinicid: String,
     clinicname: String,
-    owner: [], // appuserid
+    owner: String[], // appuserid
     address: String,
-    phone: [],
+    phone: String[],
     website: String,
     clinicidentifiednumber: String, // clinic license or registration no
     clinicidentifiedphoto: String,
@@ -16,7 +16,6 @@ export interface Clinic extends BaseModel{
 export interface ClinicInput{
     userid: String,
     clinicname: String,
-    owner: [], // appuserid
     address: String,
     phone: [], 
     website: String,
@@ -28,11 +27,11 @@ export default class ClinicClass {
     Schema = mongoose.Schema;
 
     clinicschema = new this.Schema({
-        clinicid: Number,
+        clinicid: String,
         clinicname: String,
-        owner: [Object], // appuserid
+        owner: [String], // appuserid
         address: String,
-        phone: [Object],
+        phone: [String],
         website: String,
         clinicidentifiednumber: String, // clinic license or registration no
         clinicidentifiedphoto: String,
