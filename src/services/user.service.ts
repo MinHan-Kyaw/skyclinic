@@ -139,7 +139,11 @@ export class UserServices {
             identifiedphoto_back: AesEncryption.encrypt(
               identifiedphotobackname
             ),
-            identifiednumber: AesEncryption.encrypt(req.identifiednumber),
+            nrccode: AesEncryption.encrypt(req.nrccode),
+            nrcregion: AesEncryption.encrypt(req.nrcregion),
+            nrctype: AesEncryption.encrypt(req.nrctype),
+            nrcnumber: AesEncryption.encrypt(req.nrcnumber),
+            // identifiednumber: AesEncryption.encrypt(req.identifiednumber),
             fullname: AesEncryption.encrypt(req.fullname),
             othername: AesEncryption.encrypt(req.othername),
             email: AesEncryption.encrypt(req.email),
@@ -303,7 +307,11 @@ export class UserServices {
             identifiedphoto_back: AesEncryption.encrypt(
               identifiedphotobackname
             ),
-            identifiednumber: AesEncryption.encrypt(req.identifiednumber),
+            nrccode: AesEncryption.encrypt(req.nrccode),
+            nrcregion: AesEncryption.encrypt(req.nrcregion),
+            nrctype: AesEncryption.encrypt(req.nrctype),
+            nrcnumber: AesEncryption.encrypt(req.nrcnumber),
+            // identifiednumber: AesEncryption.encrypt(req.identifiednumber),
             fullname: AesEncryption.encrypt(req.fullname),
             othername: AesEncryption.encrypt(req.othername),
             email: AesEncryption.encrypt(req.email),
@@ -336,7 +344,11 @@ export class UserServices {
               AesEncryption.decrypt(result.identifiedphoto_back),
               "identifiedphotos"
             ),
-            identifiednumber: AesEncryption.decrypt(result.identifiednumber),
+            nrccode: AesEncryption.decrypt(result.nrccode),
+            nrcregion: AesEncryption.decrypt(result.nrcregion),
+            nrctype: AesEncryption.decrypt(result.nrctype),
+            nrcnumber: AesEncryption.decrypt(result.nrcnumber),
+            // identifiednumber: AesEncryption.decrypt(result.identifiednumber),
             fullname: AesEncryption.decrypt(result.fullname),
             othername: AesEncryption.decrypt(result.othername),
             email: AesEncryption.decrypt(result.email),
@@ -578,7 +590,11 @@ export class UserServices {
             allergicdrug: AesEncryption.decrypt(skcuser.allergicdrug),
             cmt: AesEncryption.decrypt(skcuser.cmt),
             usertype: AesEncryption.decrypt(skcuser.usertype),
-            identifiednumber: AesEncryption.decrypt(skcuser.identifiednumber),
+            nrccode: AesEncryption.decrypt(skcuser.nrccode),
+            nrcregion: AesEncryption.decrypt(skcuser.nrcregion),
+            nrctype: AesEncryption.decrypt(skcuser.nrctype),
+            nrcnumber: AesEncryption.decrypt(skcuser.nrcnumber),
+            // identifiednumber: AesEncryption.decrypt(skcuser.identifiednumber),
             identifiedphoto_front: getfileurl(
               AesEncryption.decrypt(skcuser.identifiedphoto_front),
               "identifiedphotos"

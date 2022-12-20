@@ -98,7 +98,11 @@ export class RegistrationServices {
           bloodtype: "",
           allergicdrug: "",
           cmt: "",
-          identifiednumber: "",
+          // identifiednumber: "",
+          nrccode: "",
+          nrcregion: "",
+          nrctype: "",
+          nrcnumber: "",
           address: "",
           gender: "",
           usertype: AesEncryption.encrypt("002"),
@@ -180,7 +184,8 @@ export class RegistrationServices {
         const skc_user = await this.skcuser.findOne({ appuserid: app_user.appuserid });
         if (skc_user) {
           // Check the user has completed step 2 of registration process
-          const step = skc_user.identifiednumber ? true : false;
+          // const step = skc_user.identifiednumber ? true : false;
+          const step = skc_user.nrcnumber ? true : false;
           // Create token
           const token = jwt.sign({ _userid }, secretKey, {
             expiresIn: "1w",

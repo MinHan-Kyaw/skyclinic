@@ -948,7 +948,16 @@
                                 "identifiedphoto": {
                                     "type": "string"
                                 },
-                                "identifiednumber": {
+                                "nrccode": {
+                                    "type": "string"
+                                },
+                                "nrcregion": {
+                                    "type": "string"
+                                },
+                                "nrctype": {
+                                    "type": "string"
+                                },
+                                "nrcnumber": {
                                     "type": "string"
                                 },
                                 "dob": {

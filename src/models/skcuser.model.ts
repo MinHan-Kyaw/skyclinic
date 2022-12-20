@@ -15,7 +15,11 @@ export interface ISKCUser extends BaseModel {
   allergicdrug: String,
   cmt: String, //current medical treatment
   usertype: String,
-  identifiednumber: String,
+  // identifiednumber: String,
+  nrccode: String,
+  nrcregion: String,
+  nrctype: String,
+  nrcnumber: String,
   identifiedphoto_front: String,
   identifiedphoto_back: String,
   profileimage: String,
@@ -36,7 +40,11 @@ export interface RSKCUser {
   allergicdrug: String,
   cmt: String, //current medical treatment
   usertype: String,
-  identifiednumber: String,
+  nrccode: String,
+  nrcregion: String,
+  nrctype: String,
+  nrcnumber: String,
+  // identifiednumber: String,
   identifiedphoto_front: String,
   identifiedphoto_back: String,
   profileimage: String,
@@ -54,7 +62,11 @@ export interface IUserUpdate {
   bloodtype: String,
   allergicdrug: String,
   cmt: String, //current medical treatment
-  identifiednumber: String,
+  nrccode: String,
+  nrcregion: String,
+  nrctype: String,
+  nrcnumber: String,
+  // identifiednumber: String,
 }
 
 @singleton()
@@ -74,7 +86,11 @@ export default class ISKCUserClass {
     allergicdrug: String,
     cmt: String, //current medical treatment
     usertype: String,
-    identifiednumber: String,
+    nrccode: String,
+    nrcregion: String,
+    nrctype: String,
+    nrcnumber: String,
+    // identifiednumber: String,
     identifiedphoto_front: String,
     identifiedphoto_back: String,
     profileimage: String,
