@@ -15,7 +15,7 @@ import Roles from "../common/roles";
 import multer = require("multer");
 import { ClinicServices } from "../services/clinic.service";
 import formidableMiddleware from 'express-formidable';
-import { ClinicInput } from "../models/clinic.model";
+import { ClinicInput, GetClinicModel } from "../models/clinic.model";
 
 @autoInjectable()
 export default class Routes {
@@ -58,6 +58,31 @@ export default class Routes {
         )(req, res);
       }
     );
-    //create get all users route
+    //create get all clinic route
+    app.post(
+      "/clinic/getall",
+      async (req: Request, res: Response) => {
+        passport.authenticate(
+          "jwt",
+          { session: false },
+          async (err, user, info) => {
+            if (user) {
+              const data = await this.clinic_service.getallclinic();
+              if (data.status == "success") {
+                successresponse("Get clinic successfully.", data.data, res);
+              } else if (data.status == "insufficient") {
+                insufficientparameters(res);
+              } else if (data.status == "unauthorized") {
+                failureresponse("Unauthorized.", data.data, res);
+              } else {
+                failureresponse("Error.", data.data, res);
+              }
+            } else {
+              failureresponse("Unauthorized.", {}, res);
+            }
+          }
+        )(req, res);
+      }
+    );
   }
 }

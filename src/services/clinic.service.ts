@@ -11,9 +11,14 @@ import generateFilename from "../common/generateFilename";
 import minioClient from "../common/minio";
 import * as fs from "fs"; //for unlink(delete) old image in folder
 import checkFileType from "../common/checkFileType";
-import ClinicClass, { Clinic, ClinicInput } from "../models/clinic.model";
+import ClinicClass, {
+  Clinic,
+  ClinicInput,
+  GetClinicModel,
+} from "../models/clinic.model";
 import { v4 as uuidv4 } from "uuid";
 import { fileupload, getfileurl } from "../common/fileupload";
+import ISKCUserClass from "../models/skcuser.model";
 
 const jwt = require("jsonwebtoken");
 
@@ -23,9 +28,15 @@ const { secretKey, algorithms } = environment.getJWTConfig();
 export class ClinicServices {
   clinic: mongoose.Model<any>;
   appusers: mongoose.Model<any>;
-  constructor(clinic?: ClinicClass, appuser?: AppUserClass) {
+  skcusers: mongoose.Model<any>;
+  constructor(
+    clinic?: ClinicClass,
+    appuser?: AppUserClass,
+    skcuser?: ISKCUserClass
+  ) {
     this.clinic = clinic!.model;
     this.appusers = appuser!.model;
+    this.skcusers = skcuser!.model;
   }
 
   // setup doctor
@@ -97,8 +108,8 @@ export class ClinicServices {
 
         const clinicid = uuidv4();
         // collect request parameter for appuser
-        const phone_nos = req.phone.toString().split(',');
-        
+        const phone_nos = req.phone.toString().split(",");
+
         const clinic_data: Clinic = {
           clinicid: clinicid,
           clinicname: AesEncryption.encrypt(req.clinicname),
@@ -137,6 +148,70 @@ export class ClinicServices {
     }
   }
 
+  // get all clinics
+  public async getallclinic(): Promise<{ status: string; data: any }> {
+    var data: any;
+    var status: any;
+    var list: any = [];
+    try {
+      const cliniclist = await this.clinic.find({});
+      status = "success";
+      // check data empty
+      if (!cliniclist) {
+        data = {};
+        return { status, data };
+      }
+      for (var i = 0; i < cliniclist.length; i++) {
+        //check user is deleted or not
+        if (cliniclist[0]["is_delete"] == false) {
+          list.push({
+            clinicid: cliniclist[0].clinicid,
+            clinicname: AesEncryption.decrypt(cliniclist[0].clinicname),
+            // owner: [appuserid],
+            address: AesEncryption.decrypt(cliniclist[0].address),
+            phone: cliniclist[0].phone,
+            website: AesEncryption.decrypt(cliniclist[0].website),
+            clinicidentifiednumber: AesEncryption.decrypt(
+              cliniclist[0].clinicidentifiednumber
+            ), //
+            clinicidentifiedphoto: AesEncryption.decrypt(
+              cliniclist[0].clinicidentifiedphoto
+            ),
+            clinicidentifiedphotourl: getfileurl(
+              AesEncryption.decrypt(
+                cliniclist[0].clinicidentifiedphoto
+              ),
+              "clinicidentifiedphoto"
+            ),
+            // created_date: cliniclist[0].created_date,
+            // modified_date: cliniclist[0].modified_date,
+            // created_user: cliniclist[0].created_user,
+            // modified_user: cliniclist[0].modified_user,
+            // is_delete: false,
+            // is_active: true,
+          });
+        }
+      }
+      data = list;
+      status = "success";
+      return { status, data };
+      // } else {
+      //   data = {};
+      //   status = "unauthorized";
+      //   return { status, data };
+      // }
+      // } else {
+      //   data = {};
+      //   status = "unauthorized";
+      //   return { status, data };
+      // }
+    } catch (e) {
+      data = e;
+      status = "fail";
+      return { status, data };
+    }
+  }
+
   public checksetupclinicrequest(req: ClinicInput) {
     // check request parameter contain or not
     if (
@@ -147,6 +222,13 @@ export class ClinicServices {
         req.website &&
         req.clinicidentifiednumber) == undefined
     ) {
+      return "fail";
+    }
+  }
+
+  public checkgetclinicrequest(req: GetClinicModel) {
+    // check request parameter contain or not
+    if (req.userid == undefined) {
       return "fail";
     }
   }

@@ -22,6 +22,10 @@ export interface ClinicInput{
     clinicidentifiednumber: String,// clinic license or registration no
 }
 
+export interface GetClinicModel{
+    userid: String
+}
+
 @singleton()
 export default class ClinicClass {
     Schema = mongoose.Schema;

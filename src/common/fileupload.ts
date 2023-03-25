@@ -6,8 +6,8 @@ const connStr =
   "DefaultEndpointsProtocol=https;AccountName=skyclinic;AccountKey=NPrTCQyltQZrlkHYOu57TVguqFFW8Gg5Rr/+Sd/4SsyWVzvPrQaYCPm3SxSm13aTN3A2gC5nnykH+AStWidkkA==;EndpointSuffix=core.windows.net";
 const blobServiceClient = BlobServiceClient.fromConnectionString(connStr);
 const bucketname = "skc";
-// const endpoint = "http://192.168.1.20:9000/";
-const endpoint = "https://skyclinic.blob.core.windows.net/";
+const endpoint = "http://192.168.1.4:9000/";
+// const endpoint = "https://skyclinic.blob.core.windows.net/";
 const bucket_url = endpoint + bucketname + "/";
 
 
@@ -23,15 +23,15 @@ const fileupload = async (
     //   }
     // });
   }
-  //   const await_upload = await minioClient.fPutObject(
-  //     bucketname,
-  //     filepath,
-  //     file,
-  //     { "Content-Type": "application/octet-stream" }
-  //   );
-  const containerClient = blobServiceClient.getContainerClient(bucketname);
-  const blockBlobClient = containerClient.getBlockBlobClient(filepath);
-  const await_upload = await blockBlobClient.uploadFile(file);
+    const await_upload = await minioClient.fPutObject(
+      bucketname,
+      filepath,
+      file,
+      { "Content-Type": "application/octet-stream" }
+    );
+  // const containerClient = blobServiceClient.getContainerClient(bucketname);
+  // const blockBlobClient = containerClient.getBlockBlobClient(filepath);
+  // const await_upload = await blockBlobClient.uploadFile(file);
 
   fs.unlinkSync(file);
   return await_upload;

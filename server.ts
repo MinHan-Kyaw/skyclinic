@@ -6,10 +6,10 @@ import environment from "./environment";
 // dotenv.config();
 // const PORT = process.env.PORT;
 
-const PORT = environment.getPort();
+// const PORT = environment.getPort();
 
-// const PORT = process.env.PORT;
+const PORT = process.env.PORT;
 
-app.listen(PORT, '192.168.1.20', () => {
+app.listen(PORT, () => {
     console.log(`Server is running on PORT ${PORT}`);
 });
