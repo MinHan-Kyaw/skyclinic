@@ -6,7 +6,7 @@ export interface Appointment extends BaseModel {
   appointmentid: String,
   clinicid: String;
   appuserid: String; // patient id
-  doctorid: String; // Optional since the appointment can be with just clinic
+  doctorid: String; // doctor from clinic
   date: String;
   time: String;
   initialinfo: String;
@@ -17,7 +17,7 @@ export interface AppointmentInput {
   userid: String;
   clinicid: String;
   appuserid: String; // patient id
-  doctorid: String; // Optional since the appointment can be with just clinic
+  doctorid: String; // doctor from clinic
   date: String;
   time: String;
   initialinfo: String;
