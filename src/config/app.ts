@@ -9,6 +9,8 @@ import user_route from "../routes/user.route";
 import doctor_route from "../routes/doctor.route";
 import clinic_route from '../routes/clinic.route';
 import appointment_route from '../routes/appointment.route';
+import treatment_route from '../routes/treatment.route';
+import schedule_route from '../routes/schedule.route';
 import { ErrorRoutes } from "../routes/error.route";
 import passport from "passport";
 import middlewarePassport from "../middlewares/passport";
@@ -27,6 +29,8 @@ class App {
   private doctor_controller = container.resolve(doctor_route);
   private clinic_controller = container.resolve(clinic_route);
   private appointment_controller = container.resolve(appointment_route);
+  private treatment_controller = container.resolve(treatment_route);
+  private schedule_controller = container.resolve(schedule_route);
   // private routes: Routes = new Routes();
   private error_routes: ErrorRoutes = new ErrorRoutes();
 
@@ -38,6 +42,8 @@ class App {
     this.doctor_controller.route(this.app);
     this.clinic_controller.route(this.app);
     this.appointment_controller.route(this.app);
+    this.treatment_controller.route(this.app);
+    this.schedule_controller.route(this.app);
     this.error_routes.route(this.app);
     
     // get config variable
