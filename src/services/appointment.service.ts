@@ -137,31 +137,31 @@ export class AppointmentService {
       }
       for (var i = 0; i < appointment_list.length; i++) {
         //check user is deleted or not
-        if (appointment_list[0]["is_delete"] == false) {
+        if (appointment_list[i]["is_delete"] == false) {
           var patient;
           var clinic;
 
-          if (appointment_list[0].appuserid != "") {
+          if (appointment_list[i].appuserid != "") {
             patient = skcuser_list.find(
-              (x: any) => x.appuserid == appointment_list[0].appuserid
+              (x: any) => x.appuserid == appointment_list[i].appuserid
             );
           }
-          if (appointment_list[0].clinicid != "") {
+          if (appointment_list[i].clinicid != "") {
             clinic = clinic_list.find(
-              (x: any) => x.clinicid == appointment_list[0].clinicid
+              (x: any) => x.clinicid == appointment_list[i].clinicid
             );
           }
 
           list.push({
-            appointmentid: appointment_list[0].appointmentid,
-            clinicid: appointment_list[0].clinicid,
+            appointmentid: appointment_list[i].appointmentid,
+            clinicid: appointment_list[i].clinicid,
             userid: "",
-            appuserid: appointment_list[0].appuserid,
-            doctorid: appointment_list[0].doctorid,
-            date: appointment_list[0].date,
-            time: appointment_list[0].time,
-            initialinfo: appointment_list[0].initialinfo,
-            status: appointment_list[0].status,
+            appuserid: appointment_list[i].appuserid,
+            doctorid: appointment_list[i].doctorid,
+            date: appointment_list[i].date,
+            time: appointment_list[i].time,
+            initialinfo: appointment_list[i].initialinfo,
+            status: appointment_list[i].status,
             clinicinfo: clinic,
             patientinfo: patient,
           });
