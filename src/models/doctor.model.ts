@@ -35,7 +35,7 @@ export interface IDoctorInput{
 }
 
 export interface IDoctorDetail{
-    appuserid: String
+    userid: String
 }
 
 @singleton()

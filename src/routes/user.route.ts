@@ -14,7 +14,7 @@ import passport from "passport";
 import { authorize } from "../middlewares/authorize";
 import Roles from "../common/roles";
 import multer = require("multer");
-import { AppReqUser, AppSignInUser, AppUserDetail, AppUserOTP, AppUserByType, AppUserRole } from "../models/appuser.model";
+import { AppReqUser, AppSignInUser, AppUserDetail, AppUserOTP, AppUserByType } from "../models/appuser.model";
 import { IUserUpdate } from "../models/skcuser.model";
 
 @autoInjectable()
@@ -259,7 +259,7 @@ export default class Routes {
       "/user/getrole",
       passport.authenticate("jwt", { session: false }),
       async (req: Request, res: Response) => {
-        const data = await this.user_role.getrole(req.body as unknown as AppUserRole);
+        const data = await this.user_role.getrole(req.body as unknown as AppUserDetail);
         if (data.status == "success") {
           successresponse("Get User successfully", data.data, res);
         } else if (data.status == "insufficient") {
