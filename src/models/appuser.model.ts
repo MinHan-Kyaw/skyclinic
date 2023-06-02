@@ -27,6 +27,10 @@ export interface AppUserDetail{
     userid: String
 }
 
+export interface AppUserRole{
+    appuserid: String
+}
+
 export interface AppUserByType{
     age: Number,
     active: boolean,

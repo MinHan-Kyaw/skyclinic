@@ -1,6 +1,7 @@
 import { Application, NextFunction, Request, Response } from "express";
 import { autoInjectable } from "tsyringe";
 import { UserServices } from "../services/user.service";
+import { UserRoleService } from "../services/userrole.service";
 import { RegistrationServices } from "../services/registration.service";
 import {
   successresponse,
@@ -13,18 +14,21 @@ import passport from "passport";
 import { authorize } from "../middlewares/authorize";
 import Roles from "../common/roles";
 import multer = require("multer");
-import { AppReqUser, AppSignInUser, AppUserDetail, AppUserOTP, AppUserByType } from "../models/appuser.model";
+import { AppReqUser, AppSignInUser, AppUserDetail, AppUserOTP, AppUserByType, AppUserRole } from "../models/appuser.model";
 import { IUserUpdate } from "../models/skcuser.model";
 
 @autoInjectable()
 export default class Routes {
   user_service: UserServices;
+  user_role:UserRoleService;
   registration_servie: RegistrationServices;
   constructor(
     user_service: UserServices,
+    user_role: UserRoleService,
     registration_servie: RegistrationServices
   ) {
     this.user_service = user_service;
+    this.user_role = user_role;
     this.registration_servie = registration_servie;
   }
   // private user_service: Services = new Services();
@@ -245,6 +249,25 @@ export default class Routes {
           failureresponse("User not found.", data.data, res);
         } else if (data.status == "cannotdelete") {
           failureresponse("Can not delete user.", data.data, res);
+        } else {
+          failureresponse("Error.", data.data, res);
+        }
+      }
+    );
+    //get user role
+    app.post(
+      "/user/getrole",
+      passport.authenticate("jwt", { session: false }),
+      async (req: Request, res: Response) => {
+        const data = await this.user_role.getrole(req.body as unknown as AppUserRole);
+        if (data.status == "success") {
+          successresponse("Get User successfully", data.data, res);
+        } else if (data.status == "insufficient") {
+          insufficientparameters(res);
+        } else if (data.status == "unauthorized") {
+          failureresponse("Unauthorized.", data.data, res);
+        } else if (data.status == "invalid") {
+          failureresponse("User not found.", data.data, res);
         } else {
           failureresponse("Error.", data.data, res);
         }

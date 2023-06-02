@@ -21,6 +21,7 @@ export interface IDegree{
     grecord: String,//first degree's upload graduated record - photo
 }
 
+
 export interface IDoctorInput{
     userid: String,
     doctorname: String, // title to declare to patient
@@ -31,6 +32,10 @@ export interface IDoctorInput{
     gyear: String, // first degree's graduated year
     phone: String,
     specializedarea: String,
+}
+
+export interface IDoctorDetail{
+    appuserid: String
 }
 
 @singleton()

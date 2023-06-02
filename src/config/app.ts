@@ -45,7 +45,6 @@ class App {
     this.treatment_controller.route(this.app);
     this.schedule_controller.route(this.app);
     this.error_routes.route(this.app);
-    
     // get config variable
     // dotenv.config();
   }
