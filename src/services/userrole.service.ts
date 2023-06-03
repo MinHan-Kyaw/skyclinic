@@ -41,13 +41,16 @@ export class UserRoleService {
                 var doctorres = await this.doctor.findOne(appuser_filter);
 
                 var clinicres = await this.clinic.find({ owner: { $regex: _appuserid } });
+                console.log("ClinicRES");
+                console.log(clinicres);
+
                 //check user is deleted or not
                 var isdoctor = false;
                 var clinicowner = false;
                 if (doctorres && doctorres["is_delete"] == false) {
                     isdoctor = true;
                 }
-                if (clinicres) {
+                if (clinicres.length > 0) {
                     clinicowner = true;
                 }
 

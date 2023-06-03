@@ -1,11 +1,11 @@
 import * as Minio from "minio";
 const minioClient = new Minio.Client({
-    endPoint: "192.168.1.4",
-    port: 9000,
-    useSSL: false,
-    accessKey: "hwy",
-    secretKey: "hwyislitt",
-  });
+  endPoint: "192.168.100.16",
+  port: 9000,
+  useSSL: false,
+  accessKey: "waiyansoe",
+  secretKey: "waiyansoeminioskc",
+});
 
 // const minioClient = new Minio.Client({
 //     endPoint:  's3.amazonaws.com',
