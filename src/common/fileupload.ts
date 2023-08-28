@@ -5,8 +5,8 @@ import * as fs from "fs"; //for unlink(delete) old image in folder
 const connStr =
   "DefaultEndpointsProtocol=https;AccountName=skyclinic;AccountKey=NPrTCQyltQZrlkHYOu57TVguqFFW8Gg5Rr/+Sd/4SsyWVzvPrQaYCPm3SxSm13aTN3A2gC5nnykH+AStWidkkA==;EndpointSuffix=core.windows.net";
 const blobServiceClient = BlobServiceClient.fromConnectionString(connStr);
-const bucketname = "skc";
-const endpoint = "http://192.168.1.4:9000/";
+const bucketname = "skcbucket";
+const endpoint = "http://192.168.1.6:9000/";
 // const endpoint = "https://skyclinic.blob.core.windows.net/";
 const bucket_url = endpoint + bucketname + "/";
 

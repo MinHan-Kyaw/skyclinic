@@ -22,6 +22,16 @@ export interface ClinicInput{
     clinicidentifiednumber: String,// clinic license or registration no
 }
 
+export interface ClinicUpdateInput{
+    clinicid: String,
+    userid: String,
+    clinicname: String,
+    address: String,
+    phone: [], 
+    website: String,
+    clinicidentifiednumber: String,// clinic license or registration no
+}
+
 export interface GetClinicModel{
     userid: String
 }

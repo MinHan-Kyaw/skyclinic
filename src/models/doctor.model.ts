@@ -55,7 +55,7 @@ export default class IdoctorClass {
         grecord: String, //upload graduated record
         degrees: [Object],
         phone: String,
-        specializedarea: String,
+        specializedarea: [Object],
         ...BaseModel
     });
     model = mongoose.models.doctor || mongoose.model("doctor", this.doctorschema);

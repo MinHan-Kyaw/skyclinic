@@ -15,7 +15,7 @@ import Roles from "../common/roles";
 import multer = require("multer");
 import { ClinicServices } from "../services/clinic.service";
 import formidableMiddleware from 'express-formidable';
-import { ClinicInput, GetClinicModel } from "../models/clinic.model";
+import { ClinicInput, ClinicUpdateInput, GetClinicModel } from "../models/clinic.model";
 
 @autoInjectable()
 export default class Routes {
@@ -58,6 +58,38 @@ export default class Routes {
         )(req, res);
       }
     );
+
+    //update clinic route
+    app.post(
+      "/clinic/update",
+      multer({ dest: "./uploads/" }).any(),
+      async (req: Request, res: Response) => {
+        passport.authenticate(
+          "jwt",
+          { session: false },
+          async (err, user, info) => {
+            if (user) {
+              const data = await this.clinic_service.updateclinic(req.body as ClinicUpdateInput, req.files);
+              if (data.status == "success") {
+                successresponse("Updated clinic successfully.", data.data, res);
+              } else if (data.status == "insufficient") {
+                insufficientparameters(res);
+              } else if (data.status == "unauthorized") {
+                failureresponse("Unauthorized.", data.data, res);
+              } else if (data.status == "invalid") {
+                failureresponse("User not found.", data.data, res);
+              } else if (data.status == "invalidimg") {
+                failureresponse("Not allowed file type.", data.data, res);
+              } else {
+                failureresponse("Error.", data.data, res);
+              }
+            } else {
+              failureresponse("Unauthorized.", {}, res);
+            }
+          }
+        )(req, res);
+      }
+    );
     //create get all clinic route
     app.post(
       "/clinic/getall",
@@ -68,6 +100,32 @@ export default class Routes {
           async (err, user, info) => {
             if (user) {
               const data = await this.clinic_service.getallclinic();
+              if (data.status == "success") {
+                successresponse("Get clinic successfully.", data.data, res);
+              } else if (data.status == "insufficient") {
+                insufficientparameters(res);
+              } else if (data.status == "unauthorized") {
+                failureresponse("Unauthorized.", data.data, res);
+              } else {
+                failureresponse("Error.", data.data, res);
+              }
+            } else {
+              failureresponse("Unauthorized.", {}, res);
+            }
+          }
+        )(req, res);
+      }
+    );
+    app.post(
+      "/clinic/get",
+      async (req: Request, res: Response) => {
+        passport.authenticate(
+          "jwt",
+          { session: false },
+          async (err, user, info) => {
+            if (user) {
+              const {userid} = req.body;
+              const data = await this.clinic_service.getclinic(userid);
               if (data.status == "success") {
                 successresponse("Get clinic successfully.", data.data, res);
               } else if (data.status == "insufficient") {

@@ -58,6 +58,67 @@ export default class Routes {
         )(req, res);
       }
     );
-    //create get all users route
+
+    // Update doctor info
+    app.post(
+      "/doctor/update",
+      multer({ dest: "./uploads/" }).any(),
+      async (req: Request, res: Response) => {
+        passport.authenticate(
+          "jwt",
+          { session: false },
+          async (err, user, info) => {
+            if (user) {
+              const data = await this.doctor_service.updatedoctor(req.body as IDoctorInput, req.files);
+              if (data.status == "success") {
+                successresponse("Get doctor successfully.", data.data, res);
+              } else if (data.status == "insufficient") {
+                insufficientparameters(res);
+              } else if (data.status == "unauthorized") {
+                failureresponse("Unauthorized.", data.data, res);
+              } else if (data.status == "invalid") {
+                failureresponse("User not found.", data.data, res);
+              } else {
+                failureresponse("Error.", data.data, res);
+              }
+            } else {
+              failureresponse("Unauthorized.", {}, res);
+            }
+          }
+        )(req, res);
+      }
+    );
+
+    // Get doctor info
+    app.post(
+      "/doctor/get",
+      async (req: Request, res: Response) => {
+        passport.authenticate(
+          "jwt",
+          { session: false },
+          async (err, user, info) => {
+            if (user) {
+              const { userid } = req.body;
+              const data = await this.doctor_service.getdoctor(userid);
+              if (data.status == "success") {
+                successresponse("Created doctor successfully.", data.data, res);
+              } else if (data.status == "insufficient") {
+                insufficientparameters(res);
+              } else if (data.status == "unauthorized") {
+                failureresponse("Unauthorized.", data.data, res);
+              } else if (data.status == "invalid") {
+                failureresponse("User not found.", data.data, res);
+              } else if (data.status == "invalidimg") {
+                failureresponse("Not allowed file type.", data.data, res);
+              } else {
+                failureresponse("Error.", data.data, res);
+              }
+            } else {
+              failureresponse("Unauthorized.", {}, res);
+            }
+          }
+        )(req, res);
+      }
+    );
   }
 }
