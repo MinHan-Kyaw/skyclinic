@@ -11,7 +11,10 @@ import generateFilename from "../common/generateFilename";
 import minioClient from "../common/minio";
 import * as fs from "fs"; //for unlink(delete) old image in folder
 import checkFileType from "../common/checkFileType";
-import IdoctorClass, { Idoctor, IDoctorInput } from "../models/doctor.model";
+import IdoctorClass, { Idoctor, IDoctorInput,ILinkClinic } from "../models/doctor.model";
+import ClinicClass, {
+  ClinicDoctor
+} from "../models/clinic.model";
 import { v4 as uuidv4 } from "uuid";
 import { fileupload, getfileurl } from "../common/fileupload";
 
@@ -21,9 +24,11 @@ const { secretKey, algorithms } = environment.getJWTConfig();
 
 @injectable()
 export class DoctorServices {
+  clinic: mongoose.Model<any>;
   doctor: mongoose.Model<any>;
   appusers: mongoose.Model<any>;
-  constructor(doctor?: IdoctorClass, appuser?: AppUserClass) {
+  constructor(clinic?: ClinicClass,doctor?: IdoctorClass, appuser?: AppUserClass) {
+    this.clinic = clinic!.model;
     this.doctor = doctor!.model;
     this.appusers = appuser!.model;
   }
@@ -337,6 +342,160 @@ export class DoctorServices {
     }
   }
 
+  // link doctor to clinic
+  public async linkclinic(req: ILinkClinic): Promise<{ status: string; data: any }> {
+    var status: any;
+    var data: any;
+    try {
+      const check = this.checklinkclinic(req);
+      if (check == "fail") {
+        data = {};
+        const status = "insufficient";
+        return { status, data };
+      }
+      const { userid, clinicid, doctor } = req;
+      const _userid = AesEncryption.encrypt(userid);
+      // check user exit or not
+      const filter_userid = {
+        $or: [{ username: _userid }, { phone: _userid }],
+      };
+      var filter = await this.appusers.findOne(filter_userid);
+      if (filter != null && filter.appuserid) {
+        const appuserid = filter.appuserid;
+
+        // check clinic exists
+        const query = { clinicid: clinicid };
+        const clinic_info = await this.clinic.findOne(query);
+        if(!clinic_info){
+          data = {};
+          const status = "invalidclinic";
+          return { data, status };
+        }
+        // check doctor exists
+        const filter_appuserid = { appuserid: appuserid };
+        const check_exist = await this.doctor.findOne(filter_appuserid);
+        if(!check_exist){
+          data = {};
+          const status = "invaliddoctor";
+          return { data, status };
+        }
+        
+        const oldclinicdoc = clinic_info.doctor;
+        // check already exist
+        if (oldclinicdoc.includes(doctor)) {
+            data = {};
+            const status = "exist";
+            return { data, status };
+        }
+        const clinic_data: ClinicDoctor = {
+          doctor: oldclinicdoc,
+          created_date: clinic_info.created_date,
+          modified_date: new Date(Date.now()),
+          created_user: clinic_info.created_user,
+          modified_user: _userid,
+          is_delete: false,
+          is_active: true,
+        };
+        const result = await this.clinic.findOneAndUpdate(
+          { clinicid: clinicid },
+          clinic_data,
+          { new: true }
+        );
+        data = result;
+        status = "success";
+        return { status, data };
+      }
+      else {
+        data = {};
+        status = "unauthorized";
+        return { status, data };
+      }
+    } catch (e) {
+      data = e;
+      status = "fail";
+      return { status, data };
+    }
+}
+
+public async getclinic(
+  userid: string
+): Promise<{ status: string; data: any }> {
+  var status: any;
+  var data: any;
+  var list: any = [];
+  try {
+    const check = this.checkgetdoctorinput(userid);
+    if (check == "fail") {
+      data = {};
+      const status = "insufficient";
+      return { status, data };
+    }
+
+    const _userid = AesEncryption.encrypt(userid);
+    //check user exit or not
+    const filter_userid = {
+      $or: [{ username: _userid }, { phone: _userid }],
+    };
+    var filter = await this.appusers.findOne(filter_userid);
+    if (filter != null && filter.appuserid) {
+      const appuserid = filter.appuserid;
+
+      const filter_appuserid = { appuserid: appuserid };
+      // check doctor exist 
+      const check_exist = await this.doctor.findOne(filter_appuserid);
+      if (check_exist == null) {
+        data = {};
+        const status = "invalid";
+        return { data, status };
+      } else {
+        // search clinic by doctor 
+        const query = { doctor: { $in: [appuserid] } };
+        const cliniclist = await this.clinic.find(query);
+        status = "success";
+        // check data empty
+        if (!cliniclist) {
+          data = {};
+          return { status, data };
+        }
+        for (var i = 0; i < cliniclist.length; i++) {
+          //check clinic is deleted or not
+          if (cliniclist[0]["is_delete"] == false) {
+            list.push({
+              clinicid: cliniclist[0].clinicid,
+              clinicname: AesEncryption.decrypt(cliniclist[0].clinicname),
+              // owner: [appuserid],
+              address: AesEncryption.decrypt(cliniclist[0].address),
+              phone: cliniclist[0].phone,
+              website: AesEncryption.decrypt(cliniclist[0].website),
+              clinicidentifiednumber: AesEncryption.decrypt(
+                cliniclist[0].clinicidentifiednumber
+              ), //
+              clinicidentifiedphoto: AesEncryption.decrypt(
+                cliniclist[0].clinicidentifiedphoto
+              ),
+              clinicidentifiedphotourl: getfileurl(
+                AesEncryption.decrypt(cliniclist[0].clinicidentifiedphoto),
+                "clinicidentifiedphoto"
+              ),
+            });
+          }
+        }
+        data = list;
+        status = "success";
+        return { status, data };
+      }
+    } else {
+      data = {};
+      const status = "invalid";
+      return { data, status };
+    }
+  } catch (e) {
+    data = e;
+    status = "fail";
+    return { status, data };
+  }
+}
+
   public checksetupdoctorrequest(req: IDoctorInput) {
     // check request parameter contain or not
     if (
@@ -349,6 +508,17 @@ export class DoctorServices {
         req.gyear &&
         req.phone &&
         req.specializedarea) == undefined
+    ) {
+      return "fail";
+    }
+  }
+
+  public checklinkclinic(req: ILinkClinic) {
+    // check request parameter contain or not
+    if (
+      (req.clinicid &&
+        req.userid &&
+        req.doctor) == undefined
     ) {
       return "fail";
     }

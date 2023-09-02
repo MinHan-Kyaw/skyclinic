@@ -15,7 +15,7 @@ import Roles from "../common/roles";
 import multer = require("multer");
 import { DoctorServices } from "../services/doctor.service";
 import formidableMiddleware from 'express-formidable';
-import { IDoctorInput } from "../models/doctor.model";
+import { IDoctorInput, ILinkClinic } from "../models/doctor.model";
 
 @autoInjectable()
 export default class Routes {
@@ -110,6 +110,73 @@ export default class Routes {
                 failureresponse("User not found.", data.data, res);
               } else if (data.status == "invalidimg") {
                 failureresponse("Not allowed file type.", data.data, res);
+              } else {
+                failureresponse("Error.", data.data, res);
+              }
+            } else {
+              failureresponse("Unauthorized.", {}, res);
+            }
+          }
+        )(req, res);
+      }
+    );
+
+    // link doctor to clinic
+    app.post(
+      "/doctor/linkclinic",
+      async (req: Request, res: Response) => {
+        passport.authenticate(
+          "jwt",
+          { session: false },
+          async (err, user, info) => {
+            if (user) {
+              const data = await this.doctor_service.linkclinic(req.body as ILinkClinic);
+              if (data.status == "success") {
+                successresponse("Link clinic successfully.", data.data, res);
+              } else if (data.status == "insufficient") {
+                insufficientparameters(res);
+              } else if (data.status == "unauthorized") {
+                failureresponse("Unauthorized.", data.data, res);
+              } else if (data.status == "invalidclinic") {
+                failureresponse("Clinic not found.", data.data, res);
+              } else if (data.status == "invaliddoctor") {
+                failureresponse("Doctor not found.", data.data, res);
+              } else if (data.status == "exist") {
+                failureresponse("Doctor already exist.", data.data, res);
+              } else {
+                failureresponse("Error.", data.data, res);
+              }
+            } else {
+              failureresponse("Unauthorized.", {}, res);
+            }
+          }
+        )(req, res);
+      }
+    );
+
+    // get doctor clinics
+    app.post(
+      "/doctor/getclinic",
+      async (req: Request, res: Response) => {
+        passport.authenticate(
+          "jwt",
+          { session: false },
+          async (err, user, info) => {
+            if (user) {
+              const { userid } = req.body;
+              const data = await this.doctor_service.getclinic(userid);
+              if (data.status == "success") {
+                successresponse("Link clinic successfully.", data.data, res);
+              } else if (data.status == "insufficient") {
+                insufficientparameters(res);
+              } else if (data.status == "unauthorized") {
+                failureresponse("Unauthorized.", data.data, res);
+              } else if (data.status == "invalidclinic") {
+                failureresponse("Clinic not found.", data.data, res);
+              } else if (data.status == "invaliddoctor") {
+                failureresponse("Doctor not found.", data.data, res);
+              } else if (data.status == "exist") {
+                failureresponse("Doctor already exist.", data.data, res);
               } else {
                 failureresponse("Error.", data.data, res);
               }

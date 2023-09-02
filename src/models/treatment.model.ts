@@ -18,17 +18,17 @@ export interface ITreatMent extends BaseModel {
 
 export interface TreatMentInput {
   treatmentid: String,
-    clinicid: String,
-    doctorid: String,
-    userid: String, //patient id
-    desc: String, //doctor comment
-    pressure: String,
-    temperature: String,
-    date?: Date,
-    oxygenlevel: String,
-    weight: String,
-    document: [],
-    created_user: String
+  clinicid: String,
+  doctorid: String,
+  userid: String, //patient id
+  desc: String, //doctor comment
+  pressure: String,
+  temperature: String,
+  date?: Date,
+  oxygenlevel: String,
+  weight: String,
+  document: [],
+  created_user: String
 }
 
 @singleton()

@@ -15,7 +15,7 @@ import Roles from "../common/roles";
 import multer = require("multer");
 import { ClinicServices } from "../services/clinic.service";
 import formidableMiddleware from 'express-formidable';
-import { ClinicInput, ClinicUpdateInput, GetClinicModel } from "../models/clinic.model";
+import { ClinicInput, ClinicUpdateInput, IGetClinicModel, ILinkDoctor } from "../models/clinic.model";
 
 @autoInjectable()
 export default class Routes {
@@ -116,6 +116,7 @@ export default class Routes {
         )(req, res);
       }
     );
+    // get clinic by userid
     app.post(
       "/clinic/get",
       async (req: Request, res: Response) => {
@@ -132,6 +133,37 @@ export default class Routes {
                 insufficientparameters(res);
               } else if (data.status == "unauthorized") {
                 failureresponse("Unauthorized.", data.data, res);
+              } else {
+                failureresponse("Error.", data.data, res);
+              }
+            } else {
+              failureresponse("Unauthorized.", {}, res);
+            }
+          }
+        )(req, res);
+      }
+    );
+
+    // link doctor to clinic
+    app.post(
+      "/clinic/linkdoctor",
+      async (req: Request, res: Response) => {
+        passport.authenticate(
+          "jwt",
+          { session: false },
+          async (err, user, info) => {
+            if (user) {
+              const data = await this.clinic_service.linkdoctor(req.body as ILinkDoctor);
+              if (data.status == "success") {
+                successresponse("Link doctor successfully.", data.data, res);
+              } else if (data.status == "insufficient") {
+                insufficientparameters(res);
+              } else if (data.status == "unauthorized") {
+                failureresponse("Unauthorized.", data.data, res);
+              } else if (data.status == "invalid") {
+                failureresponse("Clinic not found.", data.data, res);
+              }else if (data.status == "exist") {
+                failureresponse("Doctor already exist.", data.data, res);
               } else {
                 failureresponse("Error.", data.data, res);
               }

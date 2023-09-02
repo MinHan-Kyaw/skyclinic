@@ -15,7 +15,9 @@ import ClinicClass, {
   Clinic,
   ClinicInput,
   ClinicUpdateInput,
-  GetClinicModel,
+  IGetClinicModel,
+  ILinkDoctor,
+  ClinicDoctor
 } from "../models/clinic.model";
 import { v4 as uuidv4 } from "uuid";
 import { fileupload, getfileurl } from "../common/fileupload";
@@ -110,6 +112,7 @@ export class ClinicServices {
         const clinicid = uuidv4();
         // collect request parameter for appuser
         const phone_nos = req.phone.toString().replace(" ", "").split(",");
+        const doctors = req.doctor.toString().replace(" ", "").split(",");
 
         const clinic_data: Clinic = {
           clinicid: clinicid,
@@ -118,6 +121,7 @@ export class ClinicServices {
           address: AesEncryption.encrypt(req.address),
           phone: phone_nos,
           website: AesEncryption.encrypt(req.website),
+          doctor: doctors,
           clinicidentifiednumber: AesEncryption.encrypt(
             req.clinicidentifiednumber
           ), //
@@ -238,6 +242,7 @@ public async updateclinic(
       console.log('asdfasdf')
       
       const phone_nos = req.phone.toString().replace(" ", "").split(",");
+      const doctors = req.doctor.toString().replace(" ", "").split(",");
 
       const clinic_data: Clinic = {
         clinicid: clinicid,
@@ -246,6 +251,7 @@ public async updateclinic(
         address: AesEncryption.encrypt(req.address),
         phone: phone_nos,
         website: AesEncryption.encrypt(req.website),
+        doctor: doctors,
         clinicidentifiednumber: AesEncryption.encrypt(
           req.clinicidentifiednumber
         ), //
@@ -280,7 +286,7 @@ public async updateclinic(
   }
 }
 
-  // get all clinics
+  // get clinic by owner
   public async getclinic(
     userid: string
   ): Promise<{ status: string; data: any }> {
@@ -331,12 +337,6 @@ public async updateclinic(
                 AesEncryption.decrypt(cliniclist[0].clinicidentifiedphoto),
                 "clinicidentifiedphoto"
               ),
-              // created_date: cliniclist[0].created_date,
-              // modified_date: cliniclist[0].modified_date,
-              // created_user: cliniclist[0].created_user,
-              // modified_user: cliniclist[0].modified_user,
-              // is_delete: false,
-              // is_active: true,
             });
           }
         }
@@ -417,6 +417,73 @@ public async updateclinic(
     }
   }
 
+  // link doctor to clinic
+  public async linkdoctor(req: ILinkDoctor): Promise<{ status: string; data: any }> {
+    var status: any;
+    var data: any;
+    try {
+      const check = this.checklinkdoctor(req);
+      if (check == "fail") {
+        data = {};
+        const status = "insufficient";
+        return { status, data };
+      }
+      const { userid, clinicid, doctorid } = req;
+      const _userid = AesEncryption.encrypt(userid);
+      // check user exit or not
+      const filter_userid = {
+        $or: [{ username: _userid }, { phone: _userid }],
+      };
+      var filter = await this.appusers.findOne(filter_userid);
+      if (filter != null && filter.appuserid) {
+        const appuserid = filter.appuserid;
+
+        // check clinic exists and the owner
+        const query = { owner: { $in: [appuserid] }, clinicid: clinicid };
+        const clinic_info = await this.clinic.findOne(query);
+        if(!clinic_info){
+          data = {};
+          const status = "invalid";
+          return { data, status };
+        }
+        const oldclinicdoc = clinic_info.doctor;
+        // check already exist
+        if (oldclinicdoc.includes(doctorid)) {
+            data = {};
+            const status = "exist";
+            return { data, status };
+        }
+        const clinic_data: ClinicDoctor = {
+          doctor: oldclinicdoc,
+          created_date: clinic_info.created_date,
+          modified_date: new Date(Date.now()),
+          created_user: clinic_info.created_user,
+          modified_user: _userid,
+          is_delete: false,
+          is_active: true,
+        };
+        const result = await this.clinic.findOneAndUpdate(
+          { clinicid: clinicid },
+          clinic_data,
+          { new: true }
+        );
+        data = result;
+        status = "success";
+        return { status, data };
+      }
+      else {
+        data = {};
+        status = "unauthorized";
+        return { status, data };
+      }
+    } catch (e) {
+      data = e;
+      status = "fail";
+      return { status, data };
+    }
+}
+
+
   public checksetupclinicrequest(req: ClinicInput) {
     // check request parameter contain or not
     if (
@@ -446,7 +513,18 @@ public async updateclinic(
     }
   }
 
-  public checkgetclinicrequest(req: GetClinicModel) {
+  public checklinkdoctor(req: ILinkDoctor) {
+    // check request parameter contain or not
+    if (
+      (req.clinicid &&
+        req.userid &&
+        req.doctorid) == undefined
+    ) {
+      return "fail";
+    }
+  }
+
+  public checkgetclinicrequest(req: IGetClinicModel) {
     // check request parameter contain or not
     if (req.userid == undefined) {
       return "fail";

@@ -11,7 +11,7 @@ export interface Idoctor extends BaseModel {
     smphoto: String, // Sama photo
     degrees: IDegree[], // Secondary Degrees - Degree Object Array
     phone: String,
-    specializedarea: String, 
+    specializedarea: String
 }
 
 export interface IDegree{
@@ -37,6 +37,13 @@ export interface IDoctorInput{
 export interface IDoctorDetail{
     userid: String
 }
+
+export interface ILinkClinic{
+    userid: String,
+    doctor: String,
+    clinicid: String
+}
+
 
 @singleton()
 export default class IdoctorClass {
