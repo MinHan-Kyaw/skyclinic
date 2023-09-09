@@ -52,12 +52,12 @@ export class ClinicServices {
     var list: any = [];
     try {
       // check request parameter contain or not
-      const check = this.checksetupclinicrequest(req);
-      if (check == "fail") {
-        data = {};
-        const status = "insufficient";
-        return { status, data };
-      }
+      // const check = this.checksetupclinicrequest(req);
+      // if (check == "fail") {
+      //   data = {};
+      //   const status = "insufficient";
+      //   return { status, data };
+      // }
 
       const { userid } = req;
       const _userid = AesEncryption.encrypt(userid);
@@ -86,7 +86,7 @@ export class ClinicServices {
         const clinicidentifiedphoto = files?.find(
           (x: any) => x.fieldname == "clinicidentifiedphoto"
         );
-        // const grecord = files?.find((x: any) => x.fieldname == "grecord");
+        const grecord = files?.find((x: any) => x.fieldname == "grecord");
 
         if (clinicidentifiedphoto == undefined) {
           console.log("here");
@@ -112,8 +112,12 @@ export class ClinicServices {
         const clinicid = uuidv4();
         // collect request parameter for appuser
         const phone_nos = req.phone.toString().replace(" ", "").split(",");
-        const doctors = req.doctor.toString().replace(" ", "").split(",");
-
+        let doctors: any;
+        if(req.doctor.length > 0){
+          doctors = req.doctor.toString().replace(" ", "").split(",");
+        }else{
+          doctors = []
+        }
         const clinic_data: Clinic = {
           clinicid: clinicid,
           clinicname: AesEncryption.encrypt(req.clinicname),
@@ -429,12 +433,31 @@ public async updateclinic(
         return { status, data };
       }
       const { userid, clinicid, doctorid } = req;
+      
+
+      // check doctor exist or not 
+      const _doctorid = AesEncryption.encrypt(doctorid);
+      const filter_doctorid = {
+        $or: [{ username: _doctorid }, { phone: _doctorid }],
+      };
+      var filterdoctor = await this.appusers.findOne(filter_doctorid);
+      // console.log(filterdoctor)
+      if (filterdoctor != null && filterdoctor.appuserid) {
+        var doctorappuserid = filterdoctor.appuserid;
+      }
+      else{
+        data = {};
+        const status = "invaliddoctor";
+        return { status, data };
+      }
+
+      // check user exist or not
       const _userid = AesEncryption.encrypt(userid);
-      // check user exit or not
       const filter_userid = {
         $or: [{ username: _userid }, { phone: _userid }],
       };
       var filter = await this.appusers.findOne(filter_userid);
+      
       if (filter != null && filter.appuserid) {
         const appuserid = filter.appuserid;
 
@@ -448,11 +471,14 @@ public async updateclinic(
         }
         const oldclinicdoc = clinic_info.doctor;
         // check already exist
-        if (oldclinicdoc.includes(doctorid)) {
+        if (oldclinicdoc.includes(AesEncryption.encrypt(doctorappuserid))) {
             data = {};
             const status = "exist";
             return { data, status };
         }
+        oldclinicdoc.push(AesEncryption.encrypt(doctorappuserid));
+        // console.log(oldclinicdoc);
+        
         const clinic_data: ClinicDoctor = {
           doctor: oldclinicdoc,
           created_date: clinic_info.created_date,

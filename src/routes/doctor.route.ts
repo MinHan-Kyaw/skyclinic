@@ -166,7 +166,7 @@ export default class Routes {
               const { userid } = req.body;
               const data = await this.doctor_service.getclinic(userid);
               if (data.status == "success") {
-                successresponse("Link clinic successfully.", data.data, res);
+                successresponse("Get clinic successfully.", data.data, res);
               } else if (data.status == "insufficient") {
                 insufficientparameters(res);
               } else if (data.status == "unauthorized") {

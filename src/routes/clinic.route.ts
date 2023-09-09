@@ -162,6 +162,8 @@ export default class Routes {
                 failureresponse("Unauthorized.", data.data, res);
               } else if (data.status == "invalid") {
                 failureresponse("Clinic not found.", data.data, res);
+              }else if (data.status == "invaliddoctor") {
+                failureresponse("Doctor not found.", data.data, res);
               }else if (data.status == "exist") {
                 failureresponse("Doctor already exist.", data.data, res);
               } else {

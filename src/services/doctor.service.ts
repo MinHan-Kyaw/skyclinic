@@ -43,12 +43,12 @@ export class DoctorServices {
     var list: any = [];
     try {
       // check request parameter contain or not
-      const check = this.checksetupdoctorrequest(req);
-      if (check == "fail") {
-        data = {};
-        const status = "insufficient";
-        return { status, data };
-      }
+      // const check = this.checksetupdoctorrequest(req);
+      // if (check == "fail") {
+      //   data = {};
+      //   const status = "insufficient";
+      //   return { status, data };
+      // }
 
       const { userid } = req;
       const _userid = AesEncryption.encrypt(userid);
@@ -353,7 +353,7 @@ export class DoctorServices {
         const status = "insufficient";
         return { status, data };
       }
-      const { userid, clinicid, doctor } = req;
+      const { userid, clinicid, doctorid } = req;
       const _userid = AesEncryption.encrypt(userid);
       // check user exit or not
       const filter_userid = {
@@ -371,22 +371,30 @@ export class DoctorServices {
           const status = "invalidclinic";
           return { data, status };
         }
-        // check doctor exists
-        const filter_appuserid = { appuserid: appuserid };
-        const check_exist = await this.doctor.findOne(filter_appuserid);
-        if(!check_exist){
+        // check doctor exist or not 
+        const _doctorid = AesEncryption.encrypt(doctorid);
+        const filter_doctorid = {
+          $or: [{ username: _doctorid }, { phone: _doctorid }],
+        };
+        var filterdoctor = await this.appusers.findOne(filter_doctorid);
+        // console.log(filterdoctor)
+        if (filterdoctor != null && filterdoctor.appuserid) {
+          var doctorappuserid = filterdoctor.appuserid;
+        }
+        else{
           data = {};
           const status = "invaliddoctor";
-          return { data, status };
+          return { status, data };
         }
         
         const oldclinicdoc = clinic_info.doctor;
         // check already exist
-        if (oldclinicdoc.includes(doctor)) {
+        if (oldclinicdoc.includes(AesEncryption.encrypt(doctorappuserid))) {
             data = {};
             const status = "exist";
             return { data, status };
         }
+        oldclinicdoc.push(AesEncryption.encrypt(doctorappuserid));
         const clinic_data: ClinicDoctor = {
           doctor: oldclinicdoc,
           created_date: clinic_info.created_date,
@@ -443,6 +451,7 @@ public async getclinic(
       const filter_appuserid = { appuserid: appuserid };
       // check doctor exist 
       const check_exist = await this.doctor.findOne(filter_appuserid);
+      // console.log(check_exist);
       if (check_exist == null) {
         data = {};
         const status = "invalid";
@@ -451,6 +460,7 @@ public async getclinic(
         // search clinic by doctor 
         const query = { doctor: { $in: [appuserid] } };
         const cliniclist = await this.clinic.find(query);
+        console.log(cliniclist)
         status = "success";
         // check data empty
         if (!cliniclist) {
@@ -518,7 +528,7 @@ public async getclinic(
     if (
       (req.clinicid &&
         req.userid &&
-        req.doctor) == undefined
+        req.doctorid) == undefined
     ) {
       return "fail";
     }

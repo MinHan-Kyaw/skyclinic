@@ -40,7 +40,7 @@ export interface IDoctorDetail{
 
 export interface ILinkClinic{
     userid: String,
-    doctor: String,
+    doctorid: String,
     clinicid: String
 }
 
